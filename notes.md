@@ -1,0 +1,1 @@
+Hello hello, this is a new notes file for the CS 240 Chess Project as proof of repository functionality.
