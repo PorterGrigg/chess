@@ -10,7 +10,7 @@ public class RookMovesCalculator implements PieceMovesCalculator {
         //define possible movement directions (vectors): for Rook it is horizontal or vertical direcions
         //define possible movement distances: for Rook it is unlimited (to end of board or to another piece)
 
-        //create a list of possible vectors
+        //create a list of possible vector
         int[][] directions = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
 
         //for each vector in the list
