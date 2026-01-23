@@ -32,10 +32,15 @@ public class BishopMovesCalculator implements PieceMovesCalculator { //moves dia
                 ChessPosition nextPos = new ChessPosition(nextRow, nextCol);
 
                 if (nextRow < 9 && nextCol < 9 && nextRow > 0 && nextCol > 0) {//if the next position is in the board bounds (else stop the while loop)
-                    moves.add(new ChessMove(start, nextPos, null));
                     if (squares.getPiece(nextPos) != null) { //if there is a piece present here
                         endCondition = true; //stop the while loop
+                        if(squares.getPiece(nextPos).getTeamColor() == piece.getTeamColor()){ //if team colors are equal this is not a valid move
+                            break;
+                        }
+                        //what to do to capture?
                     }
+                    moves.add(new ChessMove(start, nextPos, null));
+
                 }
                 else {
 
