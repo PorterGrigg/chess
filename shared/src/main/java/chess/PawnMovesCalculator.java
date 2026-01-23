@@ -8,7 +8,7 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
     public List<ChessMove> getPossibleMoves(ChessBoard squares, ChessPosition start, ChessPiece piece){
         List<ChessMove> moves = new ArrayList<>();
 
-        return moves;
+        return moves; //for pawn also need to consider promotion to Queen, rook, bishop or knight (so if they make it to the opposite side of the board at any point then they promote)
 
     }
 }
