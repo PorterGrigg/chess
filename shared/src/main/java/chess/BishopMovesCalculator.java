@@ -9,7 +9,7 @@ public class BishopMovesCalculator implements PieceMovesCalculator { //moves dia
         List<ChessMove> moves = new ArrayList<>();
         //moves.add(new ChessMove(new ChessPosition(5, 4), new ChessPosition(1, 8), null)); //this is a hard codded position
 
-        //define possible movement directions (vectors): for Bishop it is (1, 1), (-1, 1), (1, -1), (-1, -1)
+        //define possible movement directions (vectors): for Bishop it is 2(1, 1), (-1, 1), (1, -1), (-1, -1)
         //define possible movement distances: for Bishop it is unlimited (to end of board or to another piece)
         //check each vector direction and add possible moves to the list as they are validated
 
@@ -21,18 +21,32 @@ public class BishopMovesCalculator implements PieceMovesCalculator { //moves dia
         for(int[] dir: directions){
             int rowAdvance = dir[0];
             int colAdvance = dir[1];
+            int presRow = start.getRow();
+            int presCol = start.getColumn();
 
+            boolean endCondition = false;
+
+            while(!endCondition) { //While I have not hit the end of the board or another piece keep checking spaces
+                int nextRow = presRow + rowAdvance;
+                int nextCol = presCol + colAdvance;
+                ChessPosition nextPos = new ChessPosition(nextRow, nextCol);
+
+                if (nextRow < 9 && nextCol < 9 && nextRow > 0 && nextCol > 0) {//if the next position is in the board bounds (else stop the while loop)
+                    moves.add(new ChessMove(start, nextPos, null));
+                    if (squares.getPiece(nextPos) != null) { //if there is a piece present here
+                        endCondition = true; //stop the while loop
+                    }
+                }
+                else {
+
+                    endCondition = true;
+                }
+
+                presRow = nextRow; //got infinite loop because forgot to update these variables
+                presCol = nextCol;
+            }
         }
 
-        //(1, 1) vector
-        //While I have not hit the end of the board or another piece keep checking spaces
-        //if the next position is in the board bounds (else stop the while loop)
-        //add the move
-        //if there is a piece present here
-        //stop the while loop
-
-
         return moves;
-
     }
 }
