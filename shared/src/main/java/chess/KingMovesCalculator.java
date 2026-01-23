@@ -24,26 +24,16 @@ public class KingMovesCalculator implements PieceMovesCalculator {
             int nextCol = presCol + colAdvance;
             ChessPosition nextPos = new ChessPosition(nextRow, nextCol);
 
-            //no need for a while loop
+            //no need for a while loop because only moving once in any direction
             if (nextRow < 9 && nextCol < 9 && nextRow > 0 && nextCol > 0) {//if the next position is in the board bounds (else stop the while loop)
-                if (squares.getPiece(nextPos) != null) { //if there is a piece present here
-
-                    if(squares.getPiece(nextPos).getTeamColor() == piece.getTeamColor()){ //if team colors are equal this is not a valid move
-                        break;
-                    }
-                    //what to do to capture?
+                if (squares.getPiece(nextPos) == null) { //if there is a piece present here
+                    moves.add(new ChessMove(start, nextPos, null));
                 }
-                moves.add(new ChessMove(start, nextPos, null));
-
+                else if(squares.getPiece(nextPos).getTeamColor() != piece.getTeamColor()){
+                    moves.add(new ChessMove(start, nextPos, null));
+                }
             }
-            //else {
-                //endCondition = true;
-            //}
-
-            presRow = nextRow; //got infinite loop because forgot to update these variables
-            presCol = nextCol;
         }
-
 
         return moves;
     }
