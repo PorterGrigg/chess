@@ -43,7 +43,6 @@ public class BishopMovesCalculator implements PieceMovesCalculator { //moves dia
 
                 }
                 else {
-
                     endCondition = true;
                 }
 
