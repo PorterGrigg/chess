@@ -21,6 +21,7 @@ public class BishopMovesCalculator implements PieceMovesCalculator { //moves dia
         for(int[] dir: directions){
             int rowAdvance = dir[0];
             int colAdvance = dir[1];
+
         }
 
         //(1, 1) vector
