@@ -1,4 +1,14 @@
 package chess;
 
-public class QueenMovesCalculator {
+import java.util.ArrayList;
+import java.util.List;
+
+public class QueenMovesCalculator implements PieceMovesCalculator {
+    @Override
+    public List<ChessMove> getPossibleMoves(ChessBoard squares, ChessPosition start, ChessPiece piece){
+        List<ChessMove> moves = new ArrayList<>();
+
+        return moves;
+
+    }
 }

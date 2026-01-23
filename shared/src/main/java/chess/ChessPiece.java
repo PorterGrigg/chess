@@ -55,13 +55,28 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         ChessPiece piece = board.getPiece(myPosition);
-        if (piece.getPieceType() == PieceType.BISHOP){
 
-
-
-            return List.of(new ChessMove(new ChessPosition(5, 4), new ChessPosition(1, 8), null)); //this is hardcoded just to pass the test, not to actually do anything
+        switch (type) { //using the enum to switch between and redirect the getPossbleMoves to each piece type
+            case KING:
+                PieceMovesCalculator kingCalc = new KingMovesCalculator(); //because the getPossibleMoves function is for objects it requires me to make a new object to call the function on it?
+                return kingCalc.getPossibleMoves(board, myPosition, this);
+            case QUEEN:
+                PieceMovesCalculator queenCalc = new QueenMovesCalculator();
+                return queenCalc.getPossibleMoves(board, myPosition, this);
+            case BISHOP:
+                PieceMovesCalculator bishCalc = new BishopMovesCalculator();
+                return bishCalc.getPossibleMoves(board, myPosition, this);
+            case KNIGHT:
+                PieceMovesCalculator kniCalc = new KnightMovesCalculator();
+                return kniCalc.getPossibleMoves(board, myPosition, this);
+            case ROOK:
+                PieceMovesCalculator rookCalc = new RookMovesCalculator();
+                return rookCalc.getPossibleMoves(board, myPosition, this);
+            case PAWN:
+                PieceMovesCalculator pawnCalc = new PawnMovesCalculator();
+                return pawnCalc.getPossibleMoves(board, myPosition, this);
         }
-        return List.of(); //this was just a "hack" to get the test working
+        return List.of(); //requires a list to be returned in case none of above
     }
 
     @Override

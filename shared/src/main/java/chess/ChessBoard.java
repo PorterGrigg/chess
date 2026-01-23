@@ -11,7 +11,7 @@ import java.util.Objects;
  */
 public class ChessBoard {
 
-    ChessPiece[][] squares = new ChessPiece[8][8];
+    ChessPiece[][] squares = new ChessPiece[8][8]; //creates a multi-dimensional array of ChessPieces
     public ChessBoard() {
         
     }
@@ -34,7 +34,7 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        return squares[position.getRow()-1][position.getColumn()-1];
+        return squares[position.getRow()-1][position.getColumn()-1]; // this will return null if no piece is there because up at the top where squares is initialized it initilizes all of the empty squares to null
     }
 
     /**
