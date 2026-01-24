@@ -13,7 +13,7 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
         //
 
         //Normal movement
-        int rowAdvance = 0;
+        int rowAdvance;
         int colAdvance = 0;
         int[] colOptions = {-1, 1};
         //advance different if black or white
@@ -46,9 +46,25 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
             }
         }
 
+        //start movement
+        int rowAdvanceStart;
+        if ((piece.getTeamColor() == ChessGame.TeamColor.WHITE && presRow == 2) || (piece.getTeamColor() == ChessGame.TeamColor.BLACK && presRow == 7) ){ //in start position and can move 2 if no pieces in front
+            if(squares.getPiece(nextPos) == null) {
+                if(piece.getTeamColor() == ChessGame.TeamColor.WHITE){
+                    rowAdvanceStart = 2;
+                }
+                else { //black moves down the board
+                    rowAdvanceStart = -2;
+                }
 
+                int nextRowStart = presRow + rowAdvanceStart;
+                nextPos = new ChessPosition(nextRowStart, nextCol);
 
-
+                if (squares.getPiece(nextPos) == null) { //can only move forward if no piece in front
+                    moves.add(new ChessMove(start, nextPos, null));
+                }
+            }
+        }
 
         //diagonal capture
         for(int option: colOptions){
@@ -71,33 +87,6 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
                         moves.add(new ChessMove(start, nextPos, ChessPiece.PieceType.BISHOP));
                         moves.add(new ChessMove(start, nextPos, ChessPiece.PieceType.KNIGHT));
                     }
-                }
-            }
-        }
-
-        //start movement
-        if ((piece.getTeamColor() == ChessGame.TeamColor.WHITE && presRow == 2) || (piece.getTeamColor() == ChessGame.TeamColor.BLACK && presRow == 7) ){ //in start position and can move 2 if no pieces in front
-            if(squares.getPiece(nextPos) == null) {
-                if(piece.getTeamColor() == ChessGame.TeamColor.WHITE){
-                    rowAdvance = 2;
-                }
-                else { //black moves down the board
-                    rowAdvance = -2;
-                }
-
-                //presRow = start.getRow();
-                //presCol = start.getColumn();
-                nextRow = presRow + rowAdvance;
-                nextCol = presCol;//no column advance for normal movement
-                nextPos = new ChessPosition(nextRow, nextCol);
-
-                if (squares.getPiece(nextPos) == null) { //can only move forward if no piece in front
-                    moves.add(new ChessMove(start, nextPos, null));
-                }
-
-                //first move capture
-                if(squares.getPiece(nextPos) != null && squares.getPiece(nextPos).getTeamColor() != piece.getTeamColor()){
-                    moves.add(new ChessMove(start, nextPos, null));
                 }
             }
         }
