@@ -3,6 +3,7 @@ package chess;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -125,6 +126,29 @@ public class ChessGame {
     }
 
 
+
+    /**
+     * Determines if the given piece can reach the specified position
+     *
+     * @param positionChecked the position to check
+     * @param piece           the piece we are checking
+     * @param startPosition   the position the piece starts at
+     * @return True if the specified piece can reach the specified position
+     */
+    private boolean checkPositionMatch(ChessPosition positionChecked, ChessPiece piece, ChessPosition startPosition){
+        boolean matched = false;
+        Collection<ChessMove> pieceMoves = piece.pieceMoves(this.gameBoard, startPosition);
+        ChessPosition endPos;
+        for(ChessMove currMove: pieceMoves){
+            endPos = currMove.getEndPosition();
+            if (endPos.equals(positionChecked)){ //remember to use .equals for objects like positions
+                matched = true;
+            }
+        }
+        return matched;
+    }
+
+
     /**
      * Determines if the given team is in check
      *
@@ -133,20 +157,31 @@ public class ChessGame {
      */
     public boolean isInCheck(TeamColor teamColor) {
         //pass in the team color and will tell you if the king is in check
-        TeamColor otherTeam;
-        if(teamColor == TeamColor.WHITE){
-            otherTeam = TeamColor.BLACK;
-        }
-        else{
-            otherTeam = TeamColor.WHITE;
-        }
+        boolean inCheck = false;
 
         //find the king
         ChessPosition kingPos = findKing((teamColor));
 
         //see if there are any other pieces that put the king in check (check each direction that an attack could come from or check the possible moves of each opposing team piece to see if the end position will match the kings position)
+        ChessPosition currPosition ;
+        ChessPiece currPiece;
+        for(int row = 1; row<9; row++){ //each row
+            for(int col = 1; col< 9; col++){ //each column
+                currPosition = new ChessPosition(row, col);
+                currPiece = this.gameBoard.getPiece(currPosition);
+                if (currPiece == null){ //can't call piece. anything on a null object
+                }
+                else if(currPiece.getTeamColor() == teamColor){
+                }
+                else{
+                    if(checkPositionMatch(kingPos, currPiece, currPosition)){
+                        inCheck = true;
+                    }
+                }
+            }
+        }
 
-        throw new RuntimeException("Not implemented");
+        return inCheck;
     }
 
     /**
@@ -197,5 +232,20 @@ public class ChessGame {
      */
     public ChessBoard getBoard() {
         return gameBoard;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessGame chessGame = (ChessGame) o;
+        return teamTurn == chessGame.teamTurn && Objects.equals(gameBoard, chessGame.gameBoard);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(teamTurn, gameBoard);
     }
 }
