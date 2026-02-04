@@ -98,13 +98,54 @@ public class ChessGame {
     }
 
     /**
+     * Determines the position of the team's king
+     *
+     * @param teamColor which team to check for check
+     * @return ChessPosition
+     */
+    private ChessPosition findKing(TeamColor teamColor) {
+        ChessPosition kingPosition = new ChessPosition(0, 0);
+        ChessPosition currPosition ;
+        ChessPiece currPiece;
+
+        for(int row = 1; row<9; row++){ //each row
+            for(int col = 1; col< 9; col++){ //each column
+                currPosition = new ChessPosition(row, col);
+                currPiece = this.gameBoard.getPiece(currPosition);
+                if (currPiece == null){ //can't call piece. anything on a null object
+                }
+                else{
+                    if(currPiece.getTeamColor() == teamColor && currPiece.getPieceType() == ChessPiece.PieceType.KING){
+                        kingPosition = currPosition;
+                    }
+                }
+            }
+        }
+        return kingPosition;
+    }
+
+
+    /**
      * Determines if the given team is in check
      *
      * @param teamColor which team to check for check
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        //pass in the team olor and will tell you if the king is in check
+        //pass in the team color and will tell you if the king is in check
+        TeamColor otherTeam;
+        if(teamColor == TeamColor.WHITE){
+            otherTeam = TeamColor.BLACK;
+        }
+        else{
+            otherTeam = TeamColor.WHITE;
+        }
+
+        //find the king
+        ChessPosition kingPos = findKing((teamColor));
+
+        //see if there are any other pieces that put the king in check (check each direction that an attack could come from or check the possible moves of each opposing team piece to see if the end position will match the kings position)
+
         throw new RuntimeException("Not implemented");
     }
 
