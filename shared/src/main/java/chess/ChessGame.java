@@ -1,6 +1,8 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -10,6 +12,9 @@ import java.util.Collection;
  */
 public class ChessGame {
 
+    public ChessGame.TeamColor teamTurn;
+    public ChessBoard gameBoard = new ChessBoard();
+
     public ChessGame() {
 
     }
@@ -18,7 +23,7 @@ public class ChessGame {
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        throw new RuntimeException("Not implemented");
+        return teamTurn;
     }
 
     /**
@@ -27,7 +32,12 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        throw new RuntimeException("Not implemented");
+        if(teamTurn == TeamColor.BLACK){
+            teamTurn = TeamColor.WHITE;
+        }
+        else{
+            teamTurn = TeamColor.BLACK;
+        }
     }
 
     /**
@@ -46,7 +56,19 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        Collection<ChessMove> validMoves = new ArrayList<>();
+
+        //check if there is even a piece
+        ChessPiece currPiece = gameBoard.getPiece(startPosition);
+
+        Collection<ChessMove> pieceMoves = new ArrayList<>(); //the important thing to remember here is that when iterating and removing from a list the removing cannot happen simultaneously
+        pieceMoves = currPiece.pieceMoves(gameBoard, startPosition);
+
+        //copy the board for each possible move, make the ove and then see if the king is in check
+
+        //remove any movements that the pieces thought they could make but will actually put the king in check
+
+        return validMoves;
     }
 
     /**
@@ -56,7 +78,23 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        //update the state of the board, move one piece from one position to another
+        ChessPosition startPosition = move.getStartPosition();
+        ChessPosition endPosition = move.getEndPosition();
+        ChessPiece piece = gameBoard.getPiece(startPosition);
+
+        //check if there is even a piece if not throw an exception
+        if(piece == null){
+            throw new InvalidMoveException("No piece at start position");
+        }
+
+        //check the move against valid moves and if not on the list then throw exception
+
+        //includes updating promotion too
+
+        //if it makes it through all the exceptions then it is a valid move and you can make that move
+
+        gameBoard.addPiece(endPosition, piece);
     }
 
     /**
@@ -66,6 +104,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
+        //pass in the team olor and will tell you if the king is in check
         throw new RuntimeException("Not implemented");
     }
 
@@ -76,6 +115,8 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
+        //tells when game is over
+        //current color's king is in check and there are no moves that will move him out of check and there are no moves his other pieces can make to remove him from check
         throw new RuntimeException("Not implemented");
     }
 
@@ -87,6 +128,7 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
+        //king is NOT in check but there are no moves he or other pieces can make that will not put him in check
         throw new RuntimeException("Not implemented");
     }
 
@@ -96,7 +138,15 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        throw new RuntimeException("Not implemented");
+        //get the piece at each position and set that to be equal on our board
+
+        ChessPosition currPosition ;
+        for(int row = 1; row<9; row++){ //each row
+            for(int col = 1; col< 9; col++){ //each column
+                currPosition = new ChessPosition(row, col);
+                this.gameBoard.addPiece(currPosition, board.getPiece(currPosition));
+            }
+        }
     }
 
     /**
@@ -105,6 +155,6 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return gameBoard;
     }
 }
