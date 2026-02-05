@@ -37,6 +37,17 @@ public class ChessGame {
     }
 
     /**
+     * Switches which team's turn it is
+     */
+    private void switchTeamTurn(){
+        if(this.teamTurn == TeamColor.BLACK){
+            this.teamTurn = TeamColor.WHITE;
+        } else {
+            this.teamTurn = TeamColor.BLACK;
+        }
+    }
+
+    /**
      * Enum identifying the 2 possible teams in a chess game
      */
     public enum TeamColor {
@@ -129,7 +140,7 @@ public class ChessGame {
     }
 
     /**
-     * Makes a move in a chess game
+     * Makes a move in a chess game and changes the team color after doing so
      *
      * @param move chess move to perform
      * @throws InvalidMoveException if move is invalid
@@ -143,6 +154,11 @@ public class ChessGame {
         //check if there is even a piece if not throw an exception
         if(pieceToMove == null){
             throw new InvalidMoveException("No piece at start position");
+        }
+
+        //check that the piece to move is the color of the team who's turn it is
+        if(pieceToMove.getTeamColor() != this.teamTurn){
+            throw new InvalidMoveException("Move is out of turn");
         }
 
         //check the move against valid moves and if not on the list then throw exception
@@ -162,6 +178,7 @@ public class ChessGame {
         else{
             this.gameBoard.addPiece(endPosition, pieceToMove);
         }
+        switchTeamTurn();
 
     }
 
