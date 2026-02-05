@@ -161,6 +161,7 @@ public class ChessGame {
             throw new InvalidMoveException("Move is out of turn");
         }
 
+
         //check the move against valid moves and if not on the list then throw exception
         Collection<ChessMove> validMoves = validMoves(startPosition);
         if(!validMoves.contains(move)){
