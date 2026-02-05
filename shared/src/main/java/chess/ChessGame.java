@@ -18,6 +18,7 @@ public class ChessGame {
 
     public ChessGame() {
         this.teamTurn = TeamColor.WHITE;
+        this.gameBoard.resetBoard(); //for one of the tests it was specifically wanting the board to be initialized in the reset state, took me an hour to find this
     }
 
     /**
@@ -277,7 +278,7 @@ public class ChessGame {
      * @return True if the king can escape
      */
     private boolean kingCanEscape(TeamColor teamColor, ChessPosition kingPosition) {
-        boolean kingEscapes = false;
+        //boolean kingEscapes = false;
         ChessPiece kingPiece = this.gameBoard.getPiece(kingPosition);
 
         //check all the king's moves
@@ -290,16 +291,41 @@ public class ChessGame {
             moveWithoutValidate(potentialBoard, currMove);
 
             if (!fakeBoardIsInCheck(potentialBoard, teamColor)){ //if it is not in check after moving to this spot on the potential board then the king has escaped
-                kingEscapes = true;
+                return true;
             }
         }
 
+        //check the moves of all the other pieces of the same team to see if the king can escape or not
+        //check the whole board for pieces of the same color
+        ChessPosition currPosition ;
+        ChessPiece currPiece;
+        for(int row = 1; row<9; row++) { //each row
+            for (int col = 1; col < 9; col++) { //each column
+                currPosition = new ChessPosition(row, col);
+                currPiece = this.gameBoard.getPiece(currPosition);
+                if (currPiece == null) {
+                }
+                else if (currPiece.getTeamColor() != teamColor) {
+                }
+                else {
+                    //check all the piece's moves
+                    Collection<ChessMove> pieceMoves = currPiece.pieceMoves(this.gameBoard, currPosition);
+                    for (ChessMove currMove : pieceMoves) {
+                        endPos = currMove.getEndPosition();
+                        ChessBoard potentialBoard = this.gameBoard.clone();
 
+                        moveWithoutValidate(potentialBoard, currMove);
 
-        //check the moves of all the other pieces of the same team
+                        if (!fakeBoardIsInCheck(potentialBoard, teamColor)) { //if it is not in check after moving to this spot on the potential board then the king has escaped
+                            return true;
+                        }
+                    }
+                }
 
+            }
+        }
 
-        return kingEscapes;
+        return false;
     }
 
     /**
@@ -316,11 +342,10 @@ public class ChessGame {
         ChessPosition kingPos = findKing(this.gameBoard, teamColor);
 
         if (isInCheck(teamColor)) {
-
-
+            if(!kingCanEscape(teamColor, kingPos)){
+                inCheckmate = true;
+            }
         }
-
-
         return inCheckmate;
     }
 
@@ -333,7 +358,14 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         //king is NOT in check but there are no moves he or other pieces can make that will not put him in check
-        throw new RuntimeException("Not implemented");
+
+        ChessPosition kingPos = findKing(this.gameBoard, teamColor);
+        if (!isInCheck(teamColor)) {
+            if(!kingCanEscape(teamColor, kingPos)){
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -343,7 +375,8 @@ public class ChessGame {
      */
     public void setBoard(ChessBoard board) {
         //get the piece at each position and set that to be equal on our board
-
+        //this.gameBoard = board;
+        //was not passing the equal assertion test with the code below but it was actually not this as a problem
         ChessPosition currPosition ;
         for(int row = 1; row<9; row++){ //each row
             for(int col = 1; col< 9; col++){ //each column
@@ -361,7 +394,6 @@ public class ChessGame {
     public ChessBoard getBoard() {
         return gameBoard;
     }
-
 
     @Override
     public boolean equals(Object o) {
