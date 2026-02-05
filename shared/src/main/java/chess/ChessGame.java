@@ -50,6 +50,59 @@ public class ChessGame {
     }
 
     /**
+     * Moves any piece on a fake board without validating the move
+     *
+     * @param fakeBoard the fake board where we are moving
+     * @param fakeMove move to make
+     */
+    private void moveWithoutValidate(ChessBoard fakeBoard, ChessMove fakeMove) {
+        ChessPosition startPos = fakeMove.getStartPosition();
+        ChessPosition endPos = fakeMove.getEndPosition();
+        ChessPiece fakePiece = fakeBoard.getPiece(startPos);
+
+        //set old position to null
+        fakeBoard.addPiece(startPos, null);
+
+        //set new position to new
+        fakeBoard.addPiece(endPos, fakePiece);
+    }
+
+    /**
+     * Determines if the given team is in check on the fake board (real board check is below)
+     * @param board fake board
+     * @param teamColor which team to check for check
+     * @return True if the specified team is in check
+     */
+    public boolean fakeBoardIsInCheck(ChessBoard board, TeamColor teamColor) {
+        //pass in the team color and will tell you if the king is in check
+        boolean inCheck = false;
+
+        //find the king
+        ChessPosition kingPos = findKing((teamColor));
+
+        //see if there are any other pieces that put the king in check (check each direction that an attack could come from or check the possible moves of each opposing team piece to see if the end position will match the kings position)
+        ChessPosition currPosition ;
+        ChessPiece currPiece;
+        for(int row = 1; row<9; row++){ //each row
+            for(int col = 1; col< 9; col++){ //each column
+                currPosition = new ChessPosition(row, col);
+                currPiece = board.getPiece(currPosition);
+                if (currPiece == null){ //can't call piece. anything on a null object
+                }
+                else if(currPiece.getTeamColor() == teamColor){
+                }
+                else{
+                    if(checkPositionMatch(kingPos, currPiece, currPosition)){
+                        inCheck = true;
+                    }
+                }
+            }
+        }
+
+        return inCheck;
+    }
+
+    /**
      * Gets a valid moves for a piece at the given location
      *
      * @param startPosition the piece to get valid moves for
@@ -61,14 +114,22 @@ public class ChessGame {
 
         //check if there is even a piece
         ChessPiece currPiece = gameBoard.getPiece(startPosition);
+        if(currPiece != null){
+            Collection<ChessMove> allMoves = currPiece.pieceMoves(this.gameBoard, startPosition);
+            TeamColor teamColor = currPiece.getTeamColor();
 
-        Collection<ChessMove> pieceMoves = new ArrayList<>(); //the important thing to remember here is that when iterating and removing from a list the removing cannot happen simultaneously
-        pieceMoves = currPiece.pieceMoves(gameBoard, startPosition);
+            //copy the board for each possible move, make the move and then see if the king is in check
+            for(ChessMove currMove: allMoves){
+                ChessBoard potentialBoard = this.gameBoard.clone();
 
-        //copy the board for each possible move, make the ove and then see if the king is in check
+                //move the king piec to the potential position in the fake board
+                moveWithoutValidate(potentialBoard, currMove);
 
-        //remove any movements that the pieces thought they could make but will actually put the king in check
-
+                if (!fakeBoardIsInCheck(potentialBoard, teamColor)){ //if it is not in check after moving to this spot on the potential board then the king has escaped
+                    validMoves.add(currMove);
+                }
+            }
+        }
         return validMoves;
     }
 
@@ -82,20 +143,31 @@ public class ChessGame {
         //update the state of the board, move one piece from one position to another
         ChessPosition startPosition = move.getStartPosition();
         ChessPosition endPosition = move.getEndPosition();
-        ChessPiece piece = gameBoard.getPiece(startPosition);
+        ChessPiece pieceToMove = gameBoard.getPiece(startPosition);
 
         //check if there is even a piece if not throw an exception
-        if(piece == null){
+        if(pieceToMove == null){
             throw new InvalidMoveException("No piece at start position");
         }
 
         //check the move against valid moves and if not on the list then throw exception
-
-        //includes updating promotion too
+        Collection<ChessMove> validMoves = validMoves(startPosition);
+        if(!validMoves.contains(move)){
+            throw new InvalidMoveException("Not a valid move");
+        }
 
         //if it makes it through all the exceptions then it is a valid move and you can make that move
+        //set old position to null
+        this.gameBoard.addPiece(startPosition, null);
 
-        gameBoard.addPiece(endPosition, piece);
+        //includes updating promotion too
+        if(move.getPromotionPiece() != null){
+            this.gameBoard.addPiece(endPosition, new ChessPiece(pieceToMove.getTeamColor(), move.getPromotionPiece()));
+        }
+        else{
+            this.gameBoard.addPiece(endPosition, pieceToMove);
+        }
+
     }
 
     /**
@@ -149,13 +221,14 @@ public class ChessGame {
     }
 
 
+
     /**
      * Determines if the given team is in check
      *
      * @param teamColor which team to check for check
      * @return True if the specified team is in check
      */
-    public boolean isInCheck(ChessBoard board, TeamColor teamColor) {
+    public boolean isInCheck(TeamColor teamColor) {
         //pass in the team color and will tell you if the king is in check
         boolean inCheck = false;
 
@@ -168,7 +241,7 @@ public class ChessGame {
         for(int row = 1; row<9; row++){ //each row
             for(int col = 1; col< 9; col++){ //each column
                 currPosition = new ChessPosition(row, col);
-                currPiece = board.getPiece(currPosition);
+                currPiece = this.gameBoard.getPiece(currPosition);
                 if (currPiece == null){ //can't call piece. anything on a null object
                 }
                 else if(currPiece.getTeamColor() == teamColor){
@@ -203,7 +276,7 @@ public class ChessGame {
 
             //**move the king piec to the potential position in the fake board**
 
-            if (!isInCheck(potentialBoard, teamColor)){ //if it is not in check after moving to this spot on the potential board then the king has escaped
+            if (!fakeBoardIsInCheck(potentialBoard, teamColor)){ //if it is not in check after moving to this spot on the potential board then the king has escaped
                 kingEscapes = true;
             }
         }
@@ -229,7 +302,7 @@ public class ChessGame {
 
         ChessPosition kingPos = findKing((teamColor));
 
-        if (isInCheck(this.gameBoard, teamColor)) {
+        if (isInCheck(teamColor)) {
 
 
         }
