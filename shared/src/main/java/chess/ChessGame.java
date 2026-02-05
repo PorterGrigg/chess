@@ -17,7 +17,7 @@ public class ChessGame {
     public ChessBoard gameBoard = new ChessBoard();
 
     public ChessGame() {
-
+        this.teamTurn = TeamColor.WHITE;
     }
 
     /**
@@ -33,12 +33,7 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        if(teamTurn == TeamColor.BLACK){
-            teamTurn = TeamColor.WHITE;
-        }
-        else{
-            teamTurn = TeamColor.BLACK;
-        }
+        this.teamTurn = team;
     }
 
     /**
@@ -78,7 +73,7 @@ public class ChessGame {
         boolean inCheck = false;
 
         //find the king
-        ChessPosition kingPos = findKing((teamColor));
+        ChessPosition kingPos = findKing(board, teamColor);
 
         //see if there are any other pieces that put the king in check (check each direction that an attack could come from or check the possible moves of each opposing team piece to see if the end position will match the kings position)
         ChessPosition currPosition ;
@@ -92,7 +87,7 @@ public class ChessGame {
                 else if(currPiece.getTeamColor() == teamColor){
                 }
                 else{
-                    if(checkPositionMatch(kingPos, currPiece, currPosition)){
+                    if(checkPositionMatch(board, kingPos, currPiece, currPosition)){
                         inCheck = true;
                     }
                 }
@@ -176,7 +171,7 @@ public class ChessGame {
      * @param teamColor which team to check for check
      * @return ChessPosition
      */
-    private ChessPosition findKing(TeamColor teamColor) {
+    private ChessPosition findKing(ChessBoard board, TeamColor teamColor) {
         ChessPosition kingPosition = new ChessPosition(0, 0);
         ChessPosition currPosition ;
         ChessPiece currPiece;
@@ -184,7 +179,7 @@ public class ChessGame {
         for(int row = 1; row<9; row++){ //each row
             for(int col = 1; col< 9; col++){ //each column
                 currPosition = new ChessPosition(row, col);
-                currPiece = this.gameBoard.getPiece(currPosition);
+                currPiece = board.getPiece(currPosition);
                 if (currPiece == null){ //can't call piece. anything on a null object
                 }
                 else{
@@ -207,9 +202,9 @@ public class ChessGame {
      * @param startPosition   the position the piece starts at
      * @return True if the specified piece can reach the specified position
      */
-    private boolean checkPositionMatch(ChessPosition positionChecked, ChessPiece piece, ChessPosition startPosition){
+    private boolean checkPositionMatch(ChessBoard board, ChessPosition positionChecked, ChessPiece piece, ChessPosition startPosition){
         boolean matched = false;
-        Collection<ChessMove> pieceMoves = piece.pieceMoves(this.gameBoard, startPosition);
+        Collection<ChessMove> pieceMoves = piece.pieceMoves(board, startPosition);
         ChessPosition endPos;
         for(ChessMove currMove: pieceMoves){
             endPos = currMove.getEndPosition();
@@ -233,7 +228,7 @@ public class ChessGame {
         boolean inCheck = false;
 
         //find the king
-        ChessPosition kingPos = findKing((teamColor));
+        ChessPosition kingPos = findKing(this.gameBoard, teamColor);
 
         //see if there are any other pieces that put the king in check (check each direction that an attack could come from or check the possible moves of each opposing team piece to see if the end position will match the kings position)
         ChessPosition currPosition ;
@@ -247,7 +242,7 @@ public class ChessGame {
                 else if(currPiece.getTeamColor() == teamColor){
                 }
                 else{
-                    if(checkPositionMatch(kingPos, currPiece, currPosition)){
+                    if(checkPositionMatch(this.gameBoard, kingPos, currPiece, currPosition)){
                         inCheck = true;
                     }
                 }
@@ -274,7 +269,7 @@ public class ChessGame {
             endPos = currMove.getEndPosition();
             ChessBoard potentialBoard = this.gameBoard.clone();
 
-            //**move the king piec to the potential position in the fake board**
+            moveWithoutValidate(potentialBoard, currMove);
 
             if (!fakeBoardIsInCheck(potentialBoard, teamColor)){ //if it is not in check after moving to this spot on the potential board then the king has escaped
                 kingEscapes = true;
@@ -300,7 +295,7 @@ public class ChessGame {
         boolean inCheckmate = false;
         //current color's king is in check and there are no moves that will move him out of check and there are no moves his other pieces can make to remove him from check
 
-        ChessPosition kingPos = findKing((teamColor));
+        ChessPosition kingPos = findKing(this.gameBoard, teamColor);
 
         if (isInCheck(teamColor)) {
 

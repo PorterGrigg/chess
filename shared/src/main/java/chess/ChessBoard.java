@@ -107,12 +107,14 @@ public class ChessBoard implements Cloneable{
         try{
             ChessBoard clone = (ChessBoard) super.clone();
 
+            clone.squares = new ChessPiece[8][8]; //apparently when I was missing this one line of code it was making the original board be affected by the clone boards. I still don't understand why though
+
             //deep copy each square on the board
             for (int row =0; row<8; row++) {
                 for(int col=0; col<8; col++) {
                     ChessPiece piece = this.squares[row][col];
                     if (piece != null) {
-                        clone.squares[row][col] = this.squares[row][col];
+                        clone.squares[row][col] = new ChessPiece(piece.getTeamColor(), piece.getPieceType());
                     }
                 }
             }
