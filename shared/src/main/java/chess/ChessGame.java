@@ -155,7 +155,7 @@ public class ChessGame {
      * @param teamColor which team to check for check
      * @return True if the specified team is in check
      */
-    public boolean isInCheck(TeamColor teamColor) {
+    public boolean isInCheck(ChessBoard board, TeamColor teamColor) {
         //pass in the team color and will tell you if the king is in check
         boolean inCheck = false;
 
@@ -168,7 +168,7 @@ public class ChessGame {
         for(int row = 1; row<9; row++){ //each row
             for(int col = 1; col< 9; col++){ //each column
                 currPosition = new ChessPosition(row, col);
-                currPiece = this.gameBoard.getPiece(currPosition);
+                currPiece = board.getPiece(currPosition);
                 if (currPiece == null){ //can't call piece. anything on a null object
                 }
                 else if(currPiece.getTeamColor() == teamColor){
@@ -185,6 +185,37 @@ public class ChessGame {
     }
 
     /**
+     * Determines if the king can escape Check
+     *
+     * @param teamColor which team to check for checkmate
+     * @return True if the king can escape
+     */
+    private boolean kingCanEscape(TeamColor teamColor, ChessPosition kingPosition) {
+        boolean kingEscapes = false;
+        ChessPiece kingPiece = this.gameBoard.getPiece(kingPosition);
+
+        //check all the king's moves
+        Collection<ChessMove> kingMoves = kingPiece.pieceMoves(this.gameBoard, kingPosition);
+        ChessPosition endPos;
+        for(ChessMove currMove: kingMoves){
+            endPos = currMove.getEndPosition();
+            ChessBoard potentialBoard = this.gameBoard.clone();
+
+            //**move the king piec to the potential position in the fake board**
+
+            if (!isInCheck(potentialBoard, teamColor)){ //if it is not in check after moving to this spot on the potential board then the king has escaped
+                kingEscapes = true;
+            }
+        }
+
+
+        //check the moves of all the other pieces of the same team
+
+
+        return kingEscapes;
+    }
+
+    /**
      * Determines if the given team is in checkmate
      *
      * @param teamColor which team to check for checkmate
@@ -192,8 +223,18 @@ public class ChessGame {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         //tells when game is over
+        boolean inCheckmate = false;
         //current color's king is in check and there are no moves that will move him out of check and there are no moves his other pieces can make to remove him from check
-        throw new RuntimeException("Not implemented");
+
+        ChessPosition kingPos = findKing((teamColor));
+
+        if (isInCheck(this.gameBoard, teamColor)) {
+
+
+        }
+
+
+        return inCheckmate;
     }
 
     /**
