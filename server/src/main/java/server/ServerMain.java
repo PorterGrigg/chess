@@ -1,24 +1,15 @@
 package server;
 
-import io.javalin.*;
+import chess.*;
 
 public class ServerMain {
-
-    private final Javalin javalin;
-
-    public ServerMain() {
-        javalin = Javalin.create(config -> config.staticFiles.add("web"));
-
-        // Register your endpoints and exception handlers here.
-
+    public static void main(String[] args) {
+        Server server = new Server();
+        int port = server.run(8000); // start server on port 7000
+        System.out.println("Chess Server running on port " + port);
+        //This was starter code
+        //var piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
+        //System.out.println("♕ 240 Chess Server: " + piece);
     }
 
-    public int run(int desiredPort) {
-        javalin.start(desiredPort);
-        return javalin.port();
-    }
-
-    public void stop() {
-        javalin.stop();
-    }
 }
