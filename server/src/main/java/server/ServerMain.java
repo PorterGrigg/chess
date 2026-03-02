@@ -1,10 +1,24 @@
 package server;
 
-import chess.*;
+import io.javalin.*;
 
 public class ServerMain {
-    public static void main(String[] args) {
-        var piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
-        System.out.println("♕ 240 Chess Server: " + piece);
+
+    private final Javalin javalin;
+
+    public ServerMain() {
+        javalin = Javalin.create(config -> config.staticFiles.add("web"));
+
+        // Register your endpoints and exception handlers here.
+
+    }
+
+    public int run(int desiredPort) {
+        javalin.start(desiredPort);
+        return javalin.port();
+    }
+
+    public void stop() {
+        javalin.stop();
     }
 }
