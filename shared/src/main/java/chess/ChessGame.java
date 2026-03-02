@@ -16,6 +16,13 @@ public class ChessGame {
     public ChessGame.TeamColor teamTurn;
     public ChessBoard gameBoard = new ChessBoard();
 
+    //tracking movement for castling
+    public boolean whiteKingMove;
+    public boolean blackKingMove;
+    public boolean whiteRookMove;
+    public boolean blackRookMove;
+
+
     public ChessGame() {
         this.teamTurn = TeamColor.WHITE;
         this.gameBoard.resetBoard(); //for one of the tests it was specifically wanting the board to be initialized in the reset state, took me an hour to find this
@@ -162,7 +169,6 @@ public class ChessGame {
             throw new InvalidMoveException("Move is out of turn");
         }
 
-
         //check the move against valid moves and if not on the list then throw exception
         Collection<ChessMove> validMoves = validMoves(startPosition);
         if(!validMoves.contains(move)){
@@ -173,6 +179,24 @@ public class ChessGame {
         //set old position to null
         this.gameBoard.addPiece(startPosition, null);
 
+        //keep track of king and rook movement for castling
+        if(pieceToMove.getPieceType() == ChessPiece.PieceType.KING){
+            if(pieceToMove.getTeamColor() == TeamColor.WHITE){
+                this.whiteKingMove = true;
+            }
+            else{
+                this.blackKingMove = true;
+            }
+        }
+        if(pieceToMove.getPieceType() == ChessPiece.PieceType.ROOK){
+            if(pieceToMove.getTeamColor() == TeamColor.WHITE){
+                this.whiteRookMove = true;
+            }
+            else{
+                this.blackRookMove = true;
+            }
+        }
+
         //includes updating promotion too
         if(move.getPromotionPiece() != null){
             this.gameBoard.addPiece(endPosition, new ChessPiece(pieceToMove.getTeamColor(), move.getPromotionPiece()));
@@ -181,7 +205,6 @@ public class ChessGame {
             this.gameBoard.addPiece(endPosition, pieceToMove);
         }
         switchTeamTurn();
-
     }
 
     /**
