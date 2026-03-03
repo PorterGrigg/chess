@@ -5,22 +5,12 @@ import model.UserData;
 
 import java.util.ArrayList;
 
-public class MemoryUserDAO implements UserDAO{
-    private final ArrayList<UserData> userStorage = new ArrayList<>();
+public class MemoryUserDAO extends BaseMemoryDAO<UserData> implements UserDAO { //extending the base class required to specify the type, I had forgotten
 
     @Override
-    public void create(UserData userData){
-        userStorage.add(userData);
-    }
+    public UserData read(String username){
 
-    @Override
-    public ArrayList<UserData> readAll(){
-        return userStorage;
-    }
-
-    @Override
-    public void clear(){
-        userStorage.clear();
+        return null;
     }
 
 }
