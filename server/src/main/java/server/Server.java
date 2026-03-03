@@ -1,6 +1,7 @@
 package server;
 
 import io.javalin.*;
+import handler.ClearHandler;
 
 public class Server {
 
@@ -9,7 +10,7 @@ public class Server {
     public Server() {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
 
-        // Register your endpoints and exception handlers here.
+        javalin.delete("/db", new ClearHandler());
 
     }
 
