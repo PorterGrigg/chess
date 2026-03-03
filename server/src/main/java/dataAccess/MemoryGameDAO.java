@@ -1,4 +1,4 @@
 package dataAccess;
 
-public class MemoryGameDAO {
+public class MemoryGameDAO implements GameDAO{
 }

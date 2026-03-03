@@ -1,12 +1,11 @@
 package server;
 
-import dataAccess.MemoryAuthDAO;
-import dataAccess.MemoryGameDAO;
-import dataAccess.MemoryUserDAO;
+import dataAccess.*; //the .* imports the entire package
+import handler.*;
+import service.*;
 
 import io.javalin.*;
-import handler.ClearHandler;
-import service.ClearService;
+
 
 public class Server {
 
@@ -14,21 +13,30 @@ public class Server {
 
     private final ClearService clearService;
 
+    private final ClearHandler clearHandler;
+
     public Server() {
+
+        //this is where it is specified if the DAOs are memory or if they are SQL database
         //initialize the DAOs (which are memory here)
-        MemoryAuthDAO authDAO = new MemoryAuthDAO();
-        MemoryUserDAO userDAO = new MemoryUserDAO();
-        MemoryGameDAO gameDAO = new MemoryGameDAO();
+        AuthDAO authDAO = new MemoryAuthDAO();
+        UserDAO userDAO = new MemoryUserDAO();
+        GameDAO gameDAO = new MemoryGameDAO();
+
+        //initialize the DAOs (which are SQL database access here)
+//        AuthDAO authDAO = new SQLAuthDAO();
+//        UserDAO userDAO = new SQLUserDAO();
+//        GameDAO gameDAO = new SQLGameDAO();
 
         //initialize the services
         this.clearService = new ClearService(authDAO, userDAO, gameDAO);
 
         //initialize the handlers
-        ClearHandler clearHandler = new ClearHandler(clearService);
+        this.clearHandler = new ClearHandler(clearService);
 
         //define handling
         httpHandler = Javalin.create(config -> config.staticFiles.add("web"))
-            .delete("/db", this::clearAll);
+            .delete("/db", clearHandler::handle);
 
     }
 
@@ -45,8 +53,4 @@ public class Server {
         httpHandler.stop();
     }
 
-    private void clearAll(Context ctx){
-        clearService.clearAll();
-        ctx.status(200);
-    }
 }
