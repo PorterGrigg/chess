@@ -111,10 +111,11 @@ public class ServicesTests {
         //create new register request
         RegisterRequest request = new RegisterRequest("Porker", "password", "porker@byu.edu");
 
-        RegisterResult result = userService.register(request);
+        //RegisterResult result = userService.register(request);
 
         //assert that the register result failed
-        assertNull(result); //come back and fix later when add in the exceptions
+        //assertNull(result); //come back and fix later when add in the exceptions
+        assertThrows(AlreadyTakenException.class, () -> userService.register(request)); //using lambda function inside of this assertThrows
 
     }
 }

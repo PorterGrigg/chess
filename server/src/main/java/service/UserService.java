@@ -20,7 +20,7 @@ public class UserService {
         this.userDAO = userDAO;
     }
 
-    public RegisterResult register(RegisterRequest request) {
+    public RegisterResult register(RegisterRequest request) throws AlreadyTakenException{
         String username = request.username();
 
         //find if username already exists in userdata
@@ -28,7 +28,7 @@ public class UserService {
 
         //if username does exist then throw error
         if(user != null){
-            return null; //throw error here
+            throw new AlreadyTakenException("");
         }
 
         //else:add the user to user data
@@ -39,7 +39,7 @@ public class UserService {
         authDAO.create(new AuthData(authToken, username));
 
         //create and return register result
-        return new RegisterResult(username, authToken);
+        return new RegisterResult(null, null, username, authToken);
     }
 
     private String createAuthToken(){
