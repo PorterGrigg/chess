@@ -5,7 +5,6 @@ import dataAccess.UserDAO;
 import dataAccess.GameDAO;
 
 public class ClearService {
-
     private final AuthDAO authDAO;
     private final UserDAO userDAO;
     private final GameDAO gameDAO;
