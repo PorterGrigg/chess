@@ -3,6 +3,7 @@ package handler;
 import com.google.gson.Gson;
 import io.javalin.http.Context;
 
+import results.ErrorResult;
 import service.AlreadyTakenException;
 import service.UserService;
 import requests.RegisterRequest;
@@ -24,7 +25,7 @@ public class RegisterHandler {
         if(request.username() == null | request.password() == null | request.email() == null){
             //throw new BadRequestResponse("Error: bad request");
             ctx.status(400);
-            ctx.result(new Gson().toJson(new RegisterResult("message", "Error: bad request", null, null)));
+            ctx.result(new Gson().toJson(new ErrorResult("Error: bad request")));
             return; //needed this to stop the execution of other parts
         }
 
@@ -38,7 +39,7 @@ public class RegisterHandler {
         }
         catch (AlreadyTakenException exception){
             ctx.status(403);
-            ctx.result(new Gson().toJson(new RegisterResult("message", exception.getMessage(), null, null)));
+            ctx.result(new Gson().toJson(new ErrorResult(exception.getMessage())));
         }
 
     }

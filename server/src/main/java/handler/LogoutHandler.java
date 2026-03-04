@@ -3,6 +3,7 @@ package handler;
 import com.google.gson.Gson;
 import io.javalin.http.Context;
 
+import results.ErrorResult;
 import service.AlreadyTakenException;
 import service.UnauthorizedUserException;
 import service.UserService;
@@ -20,12 +21,13 @@ public class LogoutHandler {
     public void handle(Context ctx) {
 
         //convert json form to our request form
-        LogoutRequest request = new Gson().fromJson(ctx.header(), LogoutRequest.class); //copying the pet shop deserialization
+        String authToken = ctx.header("Authorization"); //no deserialization here, read the header directly
+        LogoutRequest request = new LogoutRequest(authToken); //create the request yourself
 
         //throw new BadRequestResponse("Error: bad request");
         if(request.authToken() == null){
             ctx.status(400);
-            ctx.result(new Gson().toJson(new LogoutResult("message", "Error: bad request")));
+            ctx.result(new Gson().toJson(new ErrorResult("Error: bad request")));
             return;
         }
 
@@ -38,7 +40,7 @@ public class LogoutHandler {
         }
         catch (UnauthorizedUserException exception){
             ctx.status(401);
-            ctx.result(new Gson().toJson(new LogoutResult("message", exception.getMessage())));
+            ctx.result(new Gson().toJson(new ErrorResult(exception.getMessage())));
         }
 
     }

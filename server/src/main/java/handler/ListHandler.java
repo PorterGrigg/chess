@@ -1,4 +1,48 @@
 package handler;
 
+import com.google.gson.Gson;
+import io.javalin.http.Context;
+
+import results.ErrorResult;
+import service.GameService;
+import service.UnauthorizedUserException;
+import requests.ListRequest;
+import results.ListResult;
+
 public class ListHandler {
+
+    private final GameService gameService;
+
+    public ListHandler(GameService listService) {
+        this.gameService = listService;
+    }
+
+    public void handle(Context ctx) {
+
+        //convert json form to our request form
+        String authToken = ctx.header("Authorization"); //no deserialization here, read the header directly
+        ListRequest request = new ListRequest(authToken); //create the thing yourself
+
+        //throw new BadRequestResponse("Error: bad request");
+        if(request.authToken() == null){
+            ctx.status(400);
+            ctx.result(new Gson().toJson(new ErrorResult("Error: bad request")));
+            return;
+        }
+
+        //call service
+        try{ //errors will be caught at the handler because they will be serialized here
+            ListResult result = gameService.list(request);
+
+            //convert result to json and return
+            ctx.status(200);
+            ctx.result(new Gson().toJson(result));
+        }
+        catch (UnauthorizedUserException exception){
+            ctx.status(401);
+            ctx.result(new Gson().toJson(new ErrorResult(exception.getMessage())));
+        }
+
+    }
 }
+

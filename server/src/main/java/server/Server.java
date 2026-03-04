@@ -48,9 +48,10 @@ public class Server {
         this.registerHandler = new RegisterHandler(userService);
         this.loginHandler = new LoginHandler(userService);
         this.logoutHandler = new LogoutHandler(userService);
+        this.listHandler = new ListHandler(gameService);
         this.createHandler = new CreateHandler(gameService);
         this.joinHandler = new JoinHandler(gameService);
-        this.listHandler = new ListHandler(gameService);
+
 
         //redirect requests to their respective handlers
         httpHandler = Javalin.create(config -> config.staticFiles.add("web"))

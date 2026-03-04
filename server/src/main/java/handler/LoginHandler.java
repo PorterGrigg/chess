@@ -3,6 +3,7 @@ package handler;
 import com.google.gson.Gson;
 import io.javalin.http.Context;
 
+import results.ErrorResult;
 import service.AlreadyTakenException;
 import service.UnauthorizedUserException;
 import service.UserService;
@@ -25,7 +26,7 @@ public class LoginHandler {
         //throw new BadRequestResponse("Error: bad request");
         if(request.username() == null | request.password() == null){
             ctx.status(400);
-            ctx.result(new Gson().toJson(new LoginResult("message", "Error: bad request", null, null)));
+            ctx.result(new Gson().toJson(new ErrorResult("Error: bad request")));
             return; //needed this to stop the execution of other parts
         }
 
@@ -39,7 +40,7 @@ public class LoginHandler {
         }
         catch (UnauthorizedUserException exception){
             ctx.status(401);
-            ctx.result(new Gson().toJson(new LoginResult("message", exception.getMessage(), null, null)));
+            ctx.result(new Gson().toJson(new ErrorResult( exception.getMessage())));
         }
 
     }

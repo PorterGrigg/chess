@@ -23,9 +23,6 @@ public class GameService {
         this.gameDAO = gameDAO;
     }
 
-//        this.joinHandler = new JoinHandler(gameService);
-//        this.listHandler = new ListHandler(gameService);
-
     public ListResult list(ListRequest request) throws UnauthorizedUserException{
         String authToken = request.authToken();
 
@@ -68,6 +65,28 @@ public class GameService {
     private int createID(){
         nextGameID++; //increment from last use
         return nextGameID;
+    }
+
+    public JoinResult join(JoinRequest request) throws UnauthorizedUserException{
+        String authToken = request.authToken();
+        chess.ChessGame.TeamColor playerColor = request.playerColor();
+        int gameID = request.gameID();
+
+
+        //find if  user authorized
+        AuthData authorization = authDAO.findAuth(authToken);
+
+        //if username does not exist then throw error
+        if(authorization == null){
+            throw new UnauthorizedUserException("AuthToken Not Found");
+        }
+
+        //update game
+        String username = authorization.username();
+        gameDAO.updateGame(gameID, playerColor, username);
+
+        //create and return result
+        return new JoinResult();
     }
 
 }
