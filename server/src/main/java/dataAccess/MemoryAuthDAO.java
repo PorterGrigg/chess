@@ -15,5 +15,17 @@ public class MemoryAuthDAO extends BaseMemoryDAO<AuthData> implements AuthDAO{
         return null;
     }
 
+    @Override
+    public void deleteAuth(String authToken){
+        //find auth first, then delete
+        for (int i = 0; i < generalStorage.size(); i++) {
+
+            if(generalStorage.get(i).authToken().equals(authToken)){
+                generalStorage.remove(i);
+                break;
+            }
+        }
+    }
+
 
 }
