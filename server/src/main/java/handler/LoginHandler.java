@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import io.javalin.http.Context;
 
 import results.ErrorResult;
-import service.AlreadyTakenException;
 import service.UnauthorizedUserException;
 import service.UserService;
 import requests.LoginRequest;
@@ -40,7 +39,7 @@ public class LoginHandler {
         }
         catch (UnauthorizedUserException exception){
             ctx.status(401);
-            ctx.result(new Gson().toJson(new ErrorResult( exception.getMessage())));
+            ctx.result(new Gson().toJson(new ErrorResult(exception.getMessage())));
         }
 
     }

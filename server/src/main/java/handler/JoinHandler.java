@@ -1,11 +1,10 @@
 package handler;
 
-import chess.ChessGame;
 import com.google.gson.Gson;
 import io.javalin.http.Context;
 
-import requests.LoginRequest;
 import results.ErrorResult;
+import service.AlreadyTakenException;
 import service.GameService;
 import service.UnauthorizedUserException;
 import requests.JoinRequest;
@@ -31,7 +30,7 @@ public class JoinHandler {
         JoinRequest request = new JoinRequest(authToken, playerColor, gameID); //combine data extracted from the header and body
 
         //throw new BadRequestResponse("Error: bad request");
-        if(request.authToken() == null | request.playerColor() == null){ //do I need to have gameID == 0? Cause that is default
+        if(request.authToken() == null | request.playerColor() == null | request.gameID() == 0){ //do I need to have gameID == 0? Cause that is default
             ctx.status(400);
             ctx.result(new Gson().toJson(new ErrorResult("Error: bad request")));
             return;
@@ -48,6 +47,10 @@ public class JoinHandler {
         catch (UnauthorizedUserException exception){
             ctx.status(401);
             ctx.result(new Gson().toJson(new ErrorResult( exception.getMessage())));
+        }
+        catch (AlreadyTakenException exception){
+            ctx.status(403);
+            ctx.result(new Gson().toJson(new ErrorResult(exception.getMessage())));
         }
 
     }

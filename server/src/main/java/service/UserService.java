@@ -55,7 +55,12 @@ public class UserService {
 
         //if username does not exist then throw error
         if(user == null){
-            throw new UnauthorizedUserException("User Not Found");
+            throw new UnauthorizedUserException("Error: Unauthorized");
+        }
+
+        //check that the given password is correct
+        if(!user.password().equals(password)){
+            throw new UnauthorizedUserException("Error: Unauthorized");
         }
 
         //create authData
@@ -63,7 +68,7 @@ public class UserService {
         authDAO.create(new AuthData(authToken, username));
 
         //create and return register result
-        return new LoginResult(username, password);
+        return new LoginResult(username, authToken);
     }
 
     public LogoutResult logout(LogoutRequest request) throws UnauthorizedUserException{
@@ -74,7 +79,7 @@ public class UserService {
 
         //if username does not exist then throw error
         if(authorization == null){
-            throw new UnauthorizedUserException("AuthToken Not Found");
+            throw new UnauthorizedUserException("Error: Unauthorized");
         }
 
         //remove authData
