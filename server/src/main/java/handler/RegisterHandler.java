@@ -21,6 +21,13 @@ public class RegisterHandler {
         //convert json form to our request form
         RegisterRequest request = new Gson().fromJson(ctx.body(), RegisterRequest.class); //copying the pet shop deserialization
 
+        if(request.username() == null | request.password() == null | request.email() == null){
+            //throw new BadRequestResponse("Error: bad request");
+            ctx.status(400);
+            ctx.result(new Gson().toJson(new RegisterResult("message", "Error: bad request", null, null)));
+            return; //needed this to stop the execution of other parts
+        }
+
         //call service
         try{ //errors will be caught at the handler because they will be serialized here
             RegisterResult result = userService.register(request);
@@ -32,13 +39,6 @@ public class RegisterHandler {
         catch (AlreadyTakenException exception){
             ctx.status(403);
             ctx.result(new Gson().toJson(new RegisterResult("message", exception.getMessage(), null, null)));
-        }
-
-        //check for bad request at the end because this will be last thing returned
-        if(request.username() == null | request.password() == null | request.email() == null){
-            //throw new BadRequestResponse("Error: bad request");
-            ctx.status(400);
-            ctx.result(new Gson().toJson(new RegisterResult("message", "Error: bad request", null, null)));
         }
 
     }

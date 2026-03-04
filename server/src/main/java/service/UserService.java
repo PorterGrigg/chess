@@ -4,8 +4,8 @@ import dataAccess.AuthDAO;
 import dataAccess.UserDAO;
 import model.AuthData;
 import model.UserData;
-import requests.RegisterRequest;
-import results.RegisterResult;
+import requests.*;
+import results.*;
 
 import java.util.UUID;
 
@@ -45,4 +45,44 @@ public class UserService {
     private String createAuthToken(){
         return UUID.randomUUID().toString();
     }
+
+    public LoginResult login(LoginRequest request) throws UnauthorizedUserException{
+        String username = request.username();
+        String password = request.password();
+
+        //find if username already exists in userdata
+        UserData user = userDAO.findUser(username);
+
+        //if username does not exist then throw error
+        if(user == null){
+            throw new UnauthorizedUserException("User Not Found");
+        }
+
+        //create authData
+        String authToken = createAuthToken();
+        authDAO.create(new AuthData(authToken, username));
+
+        //create and return register result
+        return new LoginResult(null, null, username, password);
+    }
+
+    public LogoutResult login(LogoutRequest request) throws UnauthorizedUserException{
+        String authToken = request.authToken();
+
+        //find if username already exists in userdata
+        AuthData authorization = authDAO.findAuth(authToken);
+
+        //if username does not exist then throw error
+        if(authorization == null){
+            throw new UnauthorizedUserException("AuthToken Not Found");
+        }
+
+        //remove authData
+        authDAO.deleteAuth(authToken);
+
+        //create and return register result
+        return new LogoutResult(null, null);
+    }
+
+
 }
