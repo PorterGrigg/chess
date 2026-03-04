@@ -1,4 +1,4 @@
 package results;
 
-public record JoinResult() {
+public record JoinResult(String error, String message) {
 }

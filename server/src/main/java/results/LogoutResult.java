@@ -1,4 +1,4 @@
 package results;
 
-public record LogoutResult() {
+public record LogoutResult(String error, String message) {
 }

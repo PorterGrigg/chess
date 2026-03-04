@@ -1,4 +1,4 @@
 package requests;
 
-public record CeateRequest() {
+public record CeateRequest(String authToken, String gameName) {
 }
