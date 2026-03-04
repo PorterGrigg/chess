@@ -66,10 +66,10 @@ public class UserService {
         return new LoginResult(null, null, username, password);
     }
 
-    public LogoutResult login(LogoutRequest request) throws UnauthorizedUserException{
+    public LogoutResult logout(LogoutRequest request) throws UnauthorizedUserException{
         String authToken = request.authToken();
 
-        //find if username already exists in userdata
+        //find if  user authorized
         AuthData authorization = authDAO.findAuth(authToken);
 
         //if username does not exist then throw error

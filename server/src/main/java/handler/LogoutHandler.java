@@ -20,7 +20,7 @@ public class LogoutHandler {
     public void handle(Context ctx) {
 
         //convert json form to our request form
-        LogoutRequest request = new Gson().fromJson(ctx.body(), LogoutRequest.class); //copying the pet shop deserialization
+        LogoutRequest request = new Gson().fromJson(ctx.header(), LogoutRequest.class); //copying the pet shop deserialization
 
         //throw new BadRequestResponse("Error: bad request");
         if(request.authToken() == null){
@@ -35,7 +35,6 @@ public class LogoutHandler {
             //convert result to json and return
             ctx.status(200);
             ctx.result(new Gson().toJson(result));
-
         }
         catch (UnauthorizedUserException exception){
             ctx.status(401);

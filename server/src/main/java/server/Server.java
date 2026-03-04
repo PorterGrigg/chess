@@ -15,7 +15,7 @@ public class Server {
 
     private final ClearService clearService;
     private final UserService userService;
-//    private final GameService gameService;
+    private final GameService gameService;
 
     private final ClearHandler clearHandler;
     private final RegisterHandler registerHandler;
@@ -61,8 +61,6 @@ public class Server {
             .get("/game", listHandler::handle)
             .post("/game", createHandler::handle)
             .put("/game", joinHandler::handle);
-
-
 
     }
 
