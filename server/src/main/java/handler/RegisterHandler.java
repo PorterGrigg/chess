@@ -1,7 +1,6 @@
 package handler;
 
 import com.google.gson.Gson;
-import io.javalin.http.BadRequestResponse;
 import io.javalin.http.Context;
 
 import service.AlreadyTakenException;

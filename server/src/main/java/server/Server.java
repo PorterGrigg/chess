@@ -19,11 +19,11 @@ public class Server {
 
     private final ClearHandler clearHandler;
     private final RegisterHandler registerHandler;
-//    private final LoginHandler loginHandler;
-//    private final LogoutHandler logoutHandler;
-//    private final CreateHandler createHandler;
-//    private final JoinHandler joinHandler;
-//    private final ListHandler listHandler;
+    private final LoginHandler loginHandler;
+    private final LogoutHandler logoutHandler;
+    private final CreateHandler createHandler;
+    private final JoinHandler joinHandler;
+    private final ListHandler listHandler;
 
     public Server() {
 
@@ -41,21 +41,28 @@ public class Server {
         //initialize the services
         this.clearService = new ClearService(authDAO, userDAO, gameDAO);
         this.userService = new UserService(authDAO, userDAO);
-//        this.gameService = new GameService(authDAO, gameDAO);
+        this.gameService = new GameService(authDAO, gameDAO);
 
         //initialize the handlers
         this.clearHandler = new ClearHandler(clearService);
         this.registerHandler = new RegisterHandler(userService);
-//        this.loginHandler = new LoginHandler(userService);
-//        this.logoutHandler = new LogoutHandler(userService);
-//        this.createHandler = new CreateHandler(gameService);
-//        this.joinHandler = new JoinHandler(gameService);
-//        this.listHandler = new ListHandler(gameService);
+        this.loginHandler = new LoginHandler(userService);
+        this.logoutHandler = new LogoutHandler(userService);
+        this.createHandler = new CreateHandler(gameService);
+        this.joinHandler = new JoinHandler(gameService);
+        this.listHandler = new ListHandler(gameService);
 
         //redirect requests to their respective handlers
         httpHandler = Javalin.create(config -> config.staticFiles.add("web"))
             .delete("/db", clearHandler::handle)
-            .post("/user", registerHandler::handle);
+            .post("/user", registerHandler::handle)
+            .post("/session", loginHandler::handle)
+            .delete("/session", logoutHandler::handle)
+            .get("/game", listHandler::handle)
+            .post("/game", createHandler::handle)
+            .put("/game", joinHandler::handle);
+
+
 
     }
 
