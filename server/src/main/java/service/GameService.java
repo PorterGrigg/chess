@@ -38,7 +38,7 @@ public class GameService {
         ArrayList<GameData> games = gameDAO.readAll();
 
         //create and return result
-        return new ListResult(null, null, games);
+        return new ListResult(games);
     }
 
 
@@ -59,7 +59,7 @@ public class GameService {
         gameDAO.create(new GameData(gameID, null, null, gameName, new ChessGame()));
 
         //create and return result
-        return new CreateResult(null, null, gameID);
+        return new CreateResult(gameID);
     }
 
     private int createID(){

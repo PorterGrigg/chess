@@ -1,6 +1,8 @@
 package handler;
 
+import com.google.gson.Gson;
 import io.javalin.http.Context;
+import results.ClearResult;
 import service.ClearService;
 
 public class ClearHandler extends BaseHandler{
@@ -14,8 +16,10 @@ public class ClearHandler extends BaseHandler{
 
     @Override
     public void handle(Context ctx) {
-        clearService.clearAll();
+        ClearResult result = clearService.clearAll();
+
         ctx.status(200);
+        ctx.result(new Gson().toJson(result));
     }
 }
 

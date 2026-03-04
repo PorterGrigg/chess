@@ -39,7 +39,7 @@ public class UserService {
         authDAO.create(new AuthData(authToken, username));
 
         //create and return register result
-        return new RegisterResult(null, null, username, authToken);
+        return new RegisterResult(username, authToken);
     }
 
     private String createAuthToken(){
@@ -63,7 +63,7 @@ public class UserService {
         authDAO.create(new AuthData(authToken, username));
 
         //create and return register result
-        return new LoginResult(null, null, username, password);
+        return new LoginResult(username, password);
     }
 
     public LogoutResult logout(LogoutRequest request) throws UnauthorizedUserException{
@@ -81,7 +81,7 @@ public class UserService {
         authDAO.deleteAuth(authToken);
 
         //create and return register result
-        return new LogoutResult(null, null);
+        return new LogoutResult();
     }
 
 
