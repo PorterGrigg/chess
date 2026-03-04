@@ -52,7 +52,6 @@ public class JoinHandler {
             ctx.status(403);
             ctx.result(new Gson().toJson(new ErrorResult(exception.getMessage())));
         }
-
     }
 }
 
