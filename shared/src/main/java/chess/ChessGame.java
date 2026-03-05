@@ -2,7 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+
 import java.util.Objects;
 
 /**
@@ -25,7 +25,8 @@ public class ChessGame {
 
     public ChessGame() {
         this.teamTurn = TeamColor.WHITE;
-        this.gameBoard.resetBoard(); //for one of the tests it was specifically wanting the board to be initialized in the reset state, took me an hour to find this
+        this.gameBoard.resetBoard(); //for one of the tests it was specifically wanting the board to be
+        // initialized in the reset state, took me an hour to find this
     }
 
     /**
@@ -94,21 +95,20 @@ public class ChessGame {
         //find the king
         ChessPosition kingPos = findKing(board, teamColor);
 
-        //see if there are any other pieces that put the king in check (check each direction that an attack could come from or check the possible moves of each opposing team piece to see if the end position will match the kings position)
+        //see if there are any other pieces that put the king in check
+        // (check each direction that an attack could come from or check the possible moves of each
+        // opposing team piece to see if the end position will match the kings position)
         ChessPosition currPosition ;
         ChessPiece currPiece;
         for(int row = 1; row<9; row++){ //each row
             for(int col = 1; col< 9; col++){ //each column
                 currPosition = new ChessPosition(row, col);
                 currPiece = board.getPiece(currPosition);
-                if (currPiece == null){ //can't call piece. anything on a null object
+                if (currPiece == null || currPiece.getTeamColor() == teamColor){
+                    continue;
                 }
-                else if(currPiece.getTeamColor() == teamColor){
-                }
-                else{
-                    if(checkPositionMatch(board, kingPos, currPiece, currPosition)){
+                if(checkPositionMatch(board, kingPos, currPiece, currPosition)){
                         inCheck = true;
-                    }
                 }
             }
         }
@@ -139,7 +139,8 @@ public class ChessGame {
                 //move the king piec to the potential position in the fake board
                 moveWithoutValidate(potentialBoard, currMove);
 
-                if (!fakeBoardIsInCheck(potentialBoard, teamColor)){ //if it is not in check after moving to this spot on the potential board then the king has escaped
+                if (!fakeBoardIsInCheck(potentialBoard, teamColor)){ //if it is not in check after moving to this
+                    // spot on the potential board then the king has escaped
                     validMoves.add(currMove);
                 }
             }
@@ -222,12 +223,12 @@ public class ChessGame {
             for(int col = 1; col< 9; col++){ //each column
                 currPosition = new ChessPosition(row, col);
                 currPiece = board.getPiece(currPosition);
-                if (currPiece == null){ //can't call piece. anything on a null object
+                if (currPiece == null){//can't call piece. anything on a null object
+                    continue;
                 }
-                else{
-                    if(currPiece.getTeamColor() == teamColor && currPiece.getPieceType() == ChessPiece.PieceType.KING){
+                if(currPiece.getTeamColor() == teamColor && currPiece.getPieceType() == ChessPiece.PieceType.KING){
                         kingPosition = currPosition;
-                    }
+
                 }
             }
         }
@@ -244,7 +245,8 @@ public class ChessGame {
      * @param startPosition   the position the piece starts at
      * @return True if the specified piece can reach the specified position
      */
-    private boolean checkPositionMatch(ChessBoard board, ChessPosition positionChecked, ChessPiece piece, ChessPosition startPosition){
+    private boolean checkPositionMatch(ChessBoard board, ChessPosition positionChecked, ChessPiece piece,
+                                       ChessPosition startPosition){
         boolean matched = false;
         Collection<ChessMove> pieceMoves = piece.pieceMoves(board, startPosition);
         ChessPosition endPos;
@@ -272,21 +274,20 @@ public class ChessGame {
         //find the king
         ChessPosition kingPos = findKing(this.gameBoard, teamColor);
 
-        //see if there are any other pieces that put the king in check (check each direction that an attack could come from or check the possible moves of each opposing team piece to see if the end position will match the kings position)
+        //see if there are any other pieces that put the king in check
+        // (check each direction that an attack could come from or check the possible moves of
+        // each opposing team piece to see if the end position will match the kings position)
         ChessPosition currPosition ;
         ChessPiece currPiece;
         for(int row = 1; row<9; row++){ //each row
             for(int col = 1; col< 9; col++){ //each column
                 currPosition = new ChessPosition(row, col);
                 currPiece = this.gameBoard.getPiece(currPosition);
-                if (currPiece == null){ //can't call piece. anything on a null object
+                if (currPiece == null || currPiece.getTeamColor() == teamColor){
+                    continue;
                 }
-                else if(currPiece.getTeamColor() == teamColor){
-                }
-                else{
-                    if(checkPositionMatch(this.gameBoard, kingPos, currPiece, currPosition)){
+                if(checkPositionMatch(this.gameBoard, kingPos, currPiece, currPosition)){
                         inCheck = true;
-                    }
                 }
             }
         }
@@ -313,7 +314,8 @@ public class ChessGame {
 
             moveWithoutValidate(potentialBoard, currMove);
 
-            if (!fakeBoardIsInCheck(potentialBoard, teamColor)){ //if it is not in check after moving to this spot on the potential board then the king has escaped
+            if (!fakeBoardIsInCheck(potentialBoard, teamColor)){
+                //if it is not in check after moving to this spot on the potential board then the king has escaped
                 return true;
             }
         }
@@ -326,25 +328,31 @@ public class ChessGame {
             for (int col = 1; col < 9; col++) { //each column
                 currPosition = new ChessPosition(row, col);
                 currPiece = this.gameBoard.getPiece(currPosition);
-                if (currPiece == null) {
+                if (currPiece == null || currPiece.getTeamColor() != teamColor) {
+                    continue;
                 }
-                else if (currPiece.getTeamColor() != teamColor) {
+                //check all the piece's moves
+                if (canPieceMoveToEscape(currPiece, currPosition, teamColor)) {
+                    return true;
                 }
-                else {
-                    //check all the piece's moves
-                    Collection<ChessMove> pieceMoves = currPiece.pieceMoves(this.gameBoard, currPosition);
-                    for (ChessMove currMove : pieceMoves) {
-                        endPos = currMove.getEndPosition();
-                        ChessBoard potentialBoard = this.gameBoard.clone();
+            }
+        }
 
-                        moveWithoutValidate(potentialBoard, currMove);
+        return false;
+    }
 
-                        if (!fakeBoardIsInCheck(potentialBoard, teamColor)) { //if it is not in check after moving to this spot on the potential board then the king has escaped
-                            return true;
-                        }
-                    }
-                }
+    private boolean canPieceMoveToEscape(ChessPiece piece, ChessPosition startPos, TeamColor teamColor) {
+        ChessPosition endPos;
 
+        Collection<ChessMove> pieceMoves = piece.pieceMoves(this.gameBoard, startPos);
+        for (ChessMove currMove : pieceMoves) {
+            endPos = currMove.getEndPosition();
+            ChessBoard potentialBoard = this.gameBoard.clone();
+            moveWithoutValidate(potentialBoard, currMove);
+
+            if (!fakeBoardIsInCheck(potentialBoard, teamColor)) {
+                //if it is not in check after moving to this spot on the potential board then the king has escaped
+                return true;
             }
         }
 
@@ -360,7 +368,8 @@ public class ChessGame {
     public boolean isInCheckmate(TeamColor teamColor) {
         //tells when game is over
         boolean inCheckmate = false;
-        //current color's king is in check and there are no moves that will move him out of check and there are no moves his other pieces can make to remove him from check
+        //current color's king is in check and there are no moves that will move him out of check and there are no
+        // moves his other pieces can make to remove him from check
 
         ChessPosition kingPos = findKing(this.gameBoard, teamColor);
 

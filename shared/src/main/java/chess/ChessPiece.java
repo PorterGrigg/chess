@@ -58,7 +58,8 @@ public class ChessPiece {
 
         switch (type) { //using the enum to switch between and redirect the getPossbleMoves to each piece type
             case KING:
-                PieceMovesCalculator kingCalc = new KingMovesCalculator(); //because the getPossibleMoves function is for objects it requires me to make a new object to call the function on it?
+                PieceMovesCalculator kingCalc = new KingMovesCalculator();
+
                 return kingCalc.getPossibleMoves(board, myPosition, this);
             case QUEEN:
                 PieceMovesCalculator queenCalc = new QueenMovesCalculator();

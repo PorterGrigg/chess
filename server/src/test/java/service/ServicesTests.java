@@ -1,9 +1,9 @@
 package service;
 
 import chess.ChessGame;
-import dataAccess.MemoryAuthDAO;
-import dataAccess.MemoryGameDAO;
-import dataAccess.MemoryUserDAO;
+import dataaccess.MemoryAuthDAO;
+import dataaccess.MemoryGameDAO;
+import dataaccess.MemoryUserDAO;
 
 import org.junit.jupiter.api.DisplayName; //I was trying to match the provided chesssboard tests
 import org.junit.jupiter.api.Test;
@@ -243,7 +243,7 @@ public class ServicesTests {
 
     @Test
     @DisplayName("Create Negative")
-    public void CreateNegativeTest() {
+    public void createNegativeTest() {
         //initialize DAO
         authDAO = new MemoryAuthDAO();
         userDAO = new MemoryUserDAO();
@@ -267,7 +267,7 @@ public class ServicesTests {
 
     @Test
     @DisplayName("Join Positive")
-    public void JoinPositiveTest() {
+    public void joinPositiveTest() {
         //initialize DAO
         authDAO = new MemoryAuthDAO();
         userDAO = new MemoryUserDAO();
@@ -291,7 +291,7 @@ public class ServicesTests {
 
     @Test
     @DisplayName("Join Negative")
-    public void JoinNegativeTest() {
+    public void joinNegativeTest() {
         //initialize DAO
         authDAO = new MemoryAuthDAO();
         userDAO = new MemoryUserDAO();
@@ -313,7 +313,7 @@ public class ServicesTests {
 
     @Test
     @DisplayName("List Positive")
-    public void ListPositiveTest() {
+    public void listPositiveTest() {
         //initialize DAO
         authDAO = new MemoryAuthDAO();
         userDAO = new MemoryUserDAO();
@@ -343,7 +343,7 @@ public class ServicesTests {
 
     @Test
     @DisplayName("List Negative")
-    public void ListNegativeTest() {
+    public void listNegativeTest() {
         //initialize DAO
         authDAO = new MemoryAuthDAO();
         userDAO = new MemoryUserDAO();

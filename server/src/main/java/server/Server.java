@@ -1,6 +1,6 @@
 package server;
 
-import dataAccess.*; //the .* imports the entire package
+import dataaccess.*; //the .* imports the entire package
 import handler.*;
 import service.*;
 
@@ -34,9 +34,6 @@ public class Server {
         GameDAO gameDAO = new MemoryGameDAO();
 
         //initialize the DAOs (which are SQL database access here)
-//        AuthDAO authDAO = new SQLAuthDAO();
-//        UserDAO userDAO = new SQLUserDAO();
-//        GameDAO gameDAO = new SQLGameDAO();
 
         //initialize the services
         this.clearService = new ClearService(authDAO, userDAO, gameDAO);

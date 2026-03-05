@@ -7,8 +7,7 @@ public class KnightMovesCalculator implements PieceMovesCalculator {
     @Override
     public List<ChessMove> getPossibleMoves(ChessBoard squares, ChessPosition start, ChessPiece piece){
         List<ChessMove> moves = new ArrayList<>();
-        //define possible movement directions (vectors): for Knight it is in any L direction
-        //define possible movement distances: for King it is 1 space
+        //define possible movement directions, for Knight it is in any L direction
 
         //create a list of possible vectors
         int[][] directions = {{1, 2}, {2, 1}, {-1, 2}, {-2, 1}, {2, -1}, {1, -2}, {-2, -1},{-1, -2}};
@@ -24,8 +23,8 @@ public class KnightMovesCalculator implements PieceMovesCalculator {
             int nextCol = presCol + colAdvance;
             ChessPosition nextPos = new ChessPosition(nextRow, nextCol);
 
-            //no need for a while loop because only moving once in any direction
-            if (nextRow < 9 && nextCol < 9 && nextRow > 0 && nextCol > 0) {//if the next position is in the board bounds (else stop the while loop)
+            //no need for a loop because only moving once in any direction
+            if (nextRow < 9 && nextCol < 9 && nextRow > 0 && nextCol > 0) {//if the next position is in the board
                 if (squares.getPiece(nextPos) == null) { //if there is a piece present here
                     moves.add(new ChessMove(start, nextPos, null));
                 }
