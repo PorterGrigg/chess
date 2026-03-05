@@ -42,10 +42,7 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
         if ((piece.getTeamColor() == ChessGame.TeamColor.WHITE && nextRow == 8) ||
                 (piece.getTeamColor() == ChessGame.TeamColor.BLACK && nextRow == 1) ){
             if (squares.getPiece(nextPos) == null) { //if there is not a piece present here
-                moves.add(new ChessMove(start, nextPos, ChessPiece.PieceType.QUEEN));
-                moves.add(new ChessMove(start, nextPos, ChessPiece.PieceType.ROOK));
-                moves.add(new ChessMove(start, nextPos, ChessPiece.PieceType.BISHOP));
-                moves.add(new ChessMove(start, nextPos, ChessPiece.PieceType.KNIGHT));
+                addPromotionMoves(start, nextPos, moves);
             }
         }
 
@@ -93,14 +90,18 @@ public class PawnMovesCalculator implements PieceMovesCalculator {
                     if(squares.getPiece(nextPos) != null &&
                             squares.getPiece(nextPos).getTeamColor() != piece.getTeamColor()) {
                         //if there is an opposing piece here
-                        moves.add(new ChessMove(start, nextPos, ChessPiece.PieceType.QUEEN));
-                        moves.add(new ChessMove(start, nextPos, ChessPiece.PieceType.ROOK));
-                        moves.add(new ChessMove(start, nextPos, ChessPiece.PieceType.BISHOP));
-                        moves.add(new ChessMove(start, nextPos, ChessPiece.PieceType.KNIGHT));
+                        addPromotionMoves(start, nextPos, moves);
                     }
                 }
             }
         }
         return moves;
+    }
+
+    private void addPromotionMoves(ChessPosition start, ChessPosition nextPos, List<ChessMove> moves) {
+        moves.add(new ChessMove(start, nextPos, ChessPiece.PieceType.QUEEN));
+        moves.add(new ChessMove(start, nextPos, ChessPiece.PieceType.ROOK));
+        moves.add(new ChessMove(start, nextPos, ChessPiece.PieceType.BISHOP));
+        moves.add(new ChessMove(start, nextPos, ChessPiece.PieceType.KNIGHT));
     }
 }

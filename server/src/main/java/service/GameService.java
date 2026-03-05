@@ -83,7 +83,8 @@ public class GameService {
 
         //check that user is not trying to steal another player's color
         GameData game = gameDAO.findGame(gameID);
-        if ((playerColor == ChessGame.TeamColor.BLACK & game.blackUsername() != null) | (playerColor == ChessGame.TeamColor.WHITE & game.whiteUsername() != null)){
+        if ((playerColor == ChessGame.TeamColor.BLACK & game.blackUsername() != null) |
+                (playerColor == ChessGame.TeamColor.WHITE & game.whiteUsername() != null)){
             throw new AlreadyTakenException("Error: already taken");
         }
 

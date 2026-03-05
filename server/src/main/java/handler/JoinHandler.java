@@ -27,10 +27,12 @@ public class JoinHandler {
         chess.ChessGame.TeamColor playerColor = partialRequest.playerColor();
         int gameID = partialRequest.gameID();
 
-        JoinRequest request = new JoinRequest(authToken, playerColor, gameID); //combine data extracted from the header and body
+        JoinRequest request = new JoinRequest(authToken, playerColor, gameID);
+        //combine data extracted from the header and body
 
         //throw new BadRequestResponse("Error: bad request");
-        if(request.authToken() == null | request.playerColor() == null | request.gameID() == 0){ //do I need to have gameID == 0? Cause that is default
+        if(request.authToken() == null | request.playerColor() == null | request.gameID() == 0){
+            //do I need to have gameID == 0? Cause that is default
             ctx.status(400);
             ctx.result(new Gson().toJson(new ErrorResult("Error: bad request")));
             return;

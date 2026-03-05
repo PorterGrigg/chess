@@ -32,7 +32,8 @@ public class UserService {
         }
 
         //else:add the user to user data
-        userDAO.create(new UserData(username, request.password(), request.email())); //decided to creat the Data models here because service has full control and info
+        userDAO.create(new UserData(username, request.password(), request.email()));
+        //decided to creat the Data models here because service has full control and info
 
         //create authData
         String authToken = createAuthToken();
