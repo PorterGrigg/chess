@@ -10,8 +10,8 @@ import model.AuthData;
 import model.GameData;
 import model.UserData;
 
-import requests.RegisterRequest;
-import results.RegisterResult;
+import requests.*;
+import results.*;
 
 import java.util.List;
 
@@ -117,5 +117,51 @@ public class ServicesTests {
         //assertNull(result); //come back and fix later when add in the exceptions
         assertThrows(AlreadyTakenException.class, () -> userService.register(request)); //using lambda function inside of this assertThrows
 
+    }
+
+    @Test
+    @DisplayName("Login Positive")
+    public void loginPositiveTest() {
+        //initialize DAO
+        authDAO = new MemoryAuthDAO();
+        userDAO = new MemoryUserDAO();
+        gameDAO = new MemoryGameDAO();
+
+        //add data toDOA
+        authDAO.create(new AuthData("auth1", "porker"));
+        userDAO.create(new UserData("Kermit", "password", "porker@byu.edu"));
+
+        userService = new UserService(authDAO, userDAO);
+
+        //create new login request
+        LoginRequest request = new LoginRequest("Kermit", "password");
+
+        LoginResult result = userService.login(request);
+
+        //assert authToken generted
+        assertNotNull(result.authToken());
+
+    }
+
+    @Test
+    @DisplayName("Login Negative")
+    public void loginNegativeTest() {
+        //initialize DAO
+        authDAO = new MemoryAuthDAO();
+        userDAO = new MemoryUserDAO();
+        gameDAO = new MemoryGameDAO();
+
+        //add data toDOA
+        authDAO.create(new AuthData("auth1", "porker"));
+        userDAO.create(new UserData("Kermit", "password", "porker@byu.edu"));
+
+        userService = new UserService(authDAO, userDAO);
+
+        //create new login request
+        //create new login request
+        LoginRequest request = new LoginRequest("Kermit", "pass");
+
+        //assert throws error
+        assertThrows(UnauthorizedUserException.class, () -> userService.login(request));
     }
 }
