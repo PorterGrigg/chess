@@ -1,5 +1,6 @@
 package service;
 
+import chess.ChessGame;
 import dataAccess.MemoryAuthDAO;
 import dataAccess.MemoryGameDAO;
 import dataAccess.MemoryUserDAO;
@@ -13,6 +14,7 @@ import model.UserData;
 import requests.*;
 import results.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,6 +27,7 @@ public class ServicesTests {
 
     private ClearService clearService;
     private UserService userService;
+    private GameService gameService;
 
 
 
@@ -120,6 +123,28 @@ public class ServicesTests {
     }
 
     @Test
+    @DisplayName("Login Negative")
+    public void loginNegativeTest() {
+        //initialize DAO
+        authDAO = new MemoryAuthDAO();
+        userDAO = new MemoryUserDAO();
+        gameDAO = new MemoryGameDAO();
+
+        //add data toDOA
+        authDAO.create(new AuthData("auth1", "porker"));
+        userDAO.create(new UserData("Kermit", "password", "porker@byu.edu"));
+
+        userService = new UserService(authDAO, userDAO);
+
+        //create new login request
+        //create new login request
+        LoginRequest request = new LoginRequest("Kermit", "pass");
+
+        //assert throws error
+        assertThrows(UnauthorizedUserException.class, () -> userService.login(request));
+    }
+
+    @Test
     @DisplayName("Login Positive")
     public void loginPositiveTest() {
         //initialize DAO
@@ -144,8 +169,8 @@ public class ServicesTests {
     }
 
     @Test
-    @DisplayName("Login Negative")
-    public void loginNegativeTest() {
+    @DisplayName("Logout Positive")
+    public void logoutPositiveTest() {
         //initialize DAO
         authDAO = new MemoryAuthDAO();
         userDAO = new MemoryUserDAO();
@@ -157,11 +182,182 @@ public class ServicesTests {
 
         userService = new UserService(authDAO, userDAO);
 
-        //create new login request
-        //create new login request
-        LoginRequest request = new LoginRequest("Kermit", "pass");
+        //create new request
+        LogoutRequest request = new LogoutRequest("auth1");
+
+        LogoutResult result = userService.logout(request);
+
+        //assert result is given
+        LogoutResult expectedResult = new LogoutResult();
+        assertEquals(expectedResult, result);
+        //assertTrue(expectedResult.equals(result));
+
+    }
+
+    @Test
+    @DisplayName("Logout Negative")
+    public void logoutNegativeTest() {
+        //initialize DAO
+        authDAO = new MemoryAuthDAO();
+        userDAO = new MemoryUserDAO();
+        gameDAO = new MemoryGameDAO();
+
+        //add data toDOA
+        authDAO.create(new AuthData("auth1", "porker"));
+        userDAO.create(new UserData("Kermit", "password", "porker@byu.edu"));
+
+        userService = new UserService(authDAO, userDAO);
+
+
+        //create new request
+        LogoutRequest request = new LogoutRequest("auth2");
 
         //assert throws error
-        assertThrows(UnauthorizedUserException.class, () -> userService.login(request));
+        assertThrows(UnauthorizedUserException.class, () -> userService.logout(request));
+    }
+
+    @Test
+    @DisplayName("Create Positive")
+    public void createPositiveTest() {
+        //initialize DAO
+        authDAO = new MemoryAuthDAO();
+        userDAO = new MemoryUserDAO();
+        gameDAO = new MemoryGameDAO();
+
+        //add data to DOA
+        authDAO.create(new AuthData("auth1", "porker"));
+        gameDAO.create(new GameData(123, "PeterParker", "Batman", "DoodleJump", new ChessGame()));
+
+        gameService = new GameService(authDAO, gameDAO);
+
+        //create new request
+        CreateRequest request = new CreateRequest("auth1", "Slither.io");
+
+        gameService.create(request);
+
+        //find the gamdata size
+        ArrayList<GameData> games = gameDAO.readAll();
+        assertEquals(2, games.size());
+
+    }
+
+    @Test
+    @DisplayName("Create Negative")
+    public void CreateNegativeTest() {
+        //initialize DAO
+        authDAO = new MemoryAuthDAO();
+        userDAO = new MemoryUserDAO();
+        gameDAO = new MemoryGameDAO();
+
+        //add data to DOA
+        authDAO.create(new AuthData("auth1", "porker"));
+        gameDAO.create(new GameData(123, "PeterParker", "Batman", "DoodleJump", new ChessGame()));
+
+        gameService = new GameService(authDAO, gameDAO);
+
+        //create new request
+        CreateRequest request = new CreateRequest("auth2", "Slither.io"); //invalid Auth
+
+        assertThrows(UnauthorizedUserException.class, ()->gameService.create(request));
+
+        //find the gameData size
+        ArrayList<GameData> games = gameDAO.readAll();
+        assertEquals(1, games.size());
+    }
+
+    @Test
+    @DisplayName("Join Positive")
+    public void JoinPositiveTest() {
+        //initialize DAO
+        authDAO = new MemoryAuthDAO();
+        userDAO = new MemoryUserDAO();
+        gameDAO = new MemoryGameDAO();
+
+        //add data to DOA
+        authDAO.create(new AuthData("auth1", "Porker"));
+        gameDAO.create(new GameData(123, "PeterParker",null, "DoodleJump", new ChessGame()));
+
+        gameService = new GameService(authDAO, gameDAO);
+
+        //create new request
+        JoinRequest request = new JoinRequest("auth1", ChessGame.TeamColor.BLACK, 123);
+
+        gameService.join(request);
+
+        //find the gamdata
+        GameData game = gameDAO.findGame(123);
+        assertEquals("Porker", game.blackUsername());
+    }
+
+    @Test
+    @DisplayName("Join Negative")
+    public void JoinNegativeTest() {
+        //initialize DAO
+        authDAO = new MemoryAuthDAO();
+        userDAO = new MemoryUserDAO();
+        gameDAO = new MemoryGameDAO();
+
+        //add data to DOA
+        authDAO.create(new AuthData("auth1", "porker"));
+        gameDAO.create(new GameData(123, "PeterParker", "Batman", "DoodleJump", new ChessGame()));
+
+        gameService = new GameService(authDAO, gameDAO);
+
+        //create new request
+        JoinRequest request = new JoinRequest("auth1", ChessGame.TeamColor.WHITE, 123);
+
+        //JoinResult result = gameService.join(request);
+
+        assertThrows(AlreadyTakenException.class, ()->gameService.join(request));
+    }
+
+    @Test
+    @DisplayName("List Positive")
+    public void ListPositiveTest() {
+        //initialize DAO
+        authDAO = new MemoryAuthDAO();
+        userDAO = new MemoryUserDAO();
+        gameDAO = new MemoryGameDAO();
+
+        //add data to DOA
+        authDAO.create(new AuthData("auth1", "Porker"));
+        gameDAO.create(new GameData(123, "PeterParker",null, "DoodleJump", new ChessGame()));
+
+        gameService = new GameService(authDAO, gameDAO);
+
+        //create new request
+        ListRequest request = new ListRequest("auth1");
+
+        ListResult result = gameService.list(request);
+
+        //Assert size is 1
+        assertEquals(1, result.games().size());
+
+        gameDAO.create(new GameData(124, "Joker","Nokia", "RegShow", new ChessGame()));
+        gameDAO.create(new GameData(125, "JigglyPuff","FlynnRider", "Hearts", new ChessGame()));
+
+        //After adding make sure size increases
+        ListResult newResult = gameService.list(request);
+        assertEquals(3, newResult.games().size());
+    }
+
+    @Test
+    @DisplayName("List Negative")
+    public void ListNegativeTest() {
+        //initialize DAO
+        authDAO = new MemoryAuthDAO();
+        userDAO = new MemoryUserDAO();
+        gameDAO = new MemoryGameDAO();
+
+        //add data to DOA
+        authDAO.create(new AuthData("auth1", "porker"));
+        gameDAO.create(new GameData(123, "PeterParker", "Batman", "DoodleJump", new ChessGame()));
+
+        gameService = new GameService(authDAO, gameDAO);
+
+        //create new request
+        ListRequest request = new ListRequest("auth2");
+
+        assertThrows(UnauthorizedUserException.class, ()->gameService.list(request));
     }
 }
