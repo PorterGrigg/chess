@@ -29,9 +29,13 @@ public class Server {
 
         //this is where it is specified if the DAOs are memory or if they are SQL database
         //initialize the DAOs (which are memory here)
-        AuthDAO authDAO = new MemoryAuthDAO();
-        UserDAO userDAO = new MemoryUserDAO();
-        GameDAO gameDAO = new MemoryGameDAO();
+        try {
+            AuthDAO authDAO = new SQLAuthDAO();
+            UserDAO userDAO = new SQLUserDAO();
+            GameDAO gameDAO = new SQLGameDAO();
+        } catch(DataAccessException ex) {
+            //what is done with this exception?
+        }
 
         //initialize the DAOs (which are SQL database access here)
 

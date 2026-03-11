@@ -11,7 +11,7 @@ public class SchemaInitializer {
           `authToken` varchar(256) NOT NULL,
           `username` varchar(256) NOT NULL,
           PRIMARY KEY (`authToken`),
-          INDEX(username),
+          INDEX(username)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
         """
     }; //index allows faster queries //Last line specifies the engine we use in SQL, the set of characters, and the way characters are sorted
@@ -65,7 +65,7 @@ public class SchemaInitializer {
             }
         } catch (
                 SQLException ex) {
-            //throw new DataAccessException(DataAccessException.Code.ServerError, String.format("Unable to configure database: %s", ex.getMessage()));
+            throw new DataAccessException("Unable to configure tables", ex);
         }
     }
 }

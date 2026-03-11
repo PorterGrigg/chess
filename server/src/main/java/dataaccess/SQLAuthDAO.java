@@ -1,25 +1,79 @@
 package dataaccess;
 
-import com.google.gson.Gson;
 import model.*;
 
 import java.sql.*;
+import java.util.ArrayList;
 
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-import static java.sql.Types.NULL;
-
-public class SQLAuthDAO { //implements AuthDAO
-    public SQLAuthDAO() throws DataAccessException {
+public class SQLAuthDAO extends BaseSQLDAO implements AuthDAO{
+    public SQLAuthDAO() throws DataAccessException{
         configureDatabase();
     }
 
-//    public Pet addPet(Pet pet) throws ResponseException {
-//        var statement = "INSERT INTO pet (name, type, json) VALUES (?, ?, ?)";
+    @Override
+    public void create(AuthData authData) throws DataAccessException{
+        var statement = "INSERT INTO AuthData (authToken, username) VALUES (?, ?)";
+        executeUpdate(statement, authData.authToken(), authData.username());
+    }
+
+    @Override
+    public AuthData findAuth(String authToken) throws DataAccessException{
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT authToken, username FROM AuthData WHERE authToken =?";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                ps.setString(1, authToken);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return translateResults(rs);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DataAccessException("unable to read data");
+        }
+        return null;
+    }
+
+    @Override
+    public ArrayList<AuthData> readAll() throws DataAccessException{
+        ArrayList<AuthData> result = new ArrayList<>();
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT authToken, username FROM AuthData";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        result.add(translateResults(rs));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DataAccessException("unable to read data");
+        }
+        return result;
+    }
+
+    @Override
+    public void deleteAuth(String authToken) throws  DataAccessException{
+        var statement = "DELETE FROM AuthData WHERE authToken=?";
+        executeUpdate(statement, authToken);
+    }
+
+    @Override
+    public void clear() throws DataAccessException{
+        var statement = "TRUNCATE AuthData";
+        executeUpdate(statement);
+    }
+
+    private AuthData translateResults(ResultSet rs) throws SQLException {
+        var authToken = rs.getString("authToken");
+        var username = rs.getString("username");
+        return new AuthData(authToken, username);
+    }
+
 //        String json = new Gson().toJson(pet);
 //        int id = executeUpdate(statement, pet.name(), pet.type(), json);
-//        return new Pet(id, pet.name(), pet.type());
+//      return new Pet(id, pet.name(), pet.type());
 //    }
-//
 //    public Pet getPet(int id) throws ResponseException {
 //        try (Connection conn = DatabaseManager.getConnection()) {
 //            var statement = "SELECT id, json FROM pet WHERE id=?";
@@ -94,9 +148,4 @@ public class SQLAuthDAO { //implements AuthDAO
 //            throw new ResponseException(ResponseException.Code.ServerError, String.format("unable to update database: %s, %s", statement, e.getMessage()));
 //        }
 //    }
-
-    private void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
-        SchemaInitializer.createTables();
-    }
 }

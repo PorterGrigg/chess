@@ -6,8 +6,8 @@ import java.util.ArrayList;
 
 public interface UserDAO {
 
-    void create(UserData userData);
-    UserData findUser(String username);
-    ArrayList<UserData> readAll();
-    void clear();
+    void create(UserData userData) throws DataAccessException;
+    UserData findUser(String username) throws DataAccessException;
+    ArrayList<UserData> readAll() throws DataAccessException;
+    void clear() throws DataAccessException;
 }
