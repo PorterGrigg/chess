@@ -13,15 +13,15 @@ public class SQLUserDAO extends BaseSQLDAO implements UserDAO{
     @Override
     public void create(UserData userData) throws DataAccessException{
         var statement = "INSERT INTO userData (username, password, email) VALUES (?, ?, ?)";
-        executeUpdate(statement, userData.authToken(), userData.username());
+        executeUpdate(statement, userData.username(), userData.password(), userData.email());
     }
 
     @Override
     public UserData findUser(String username) throws DataAccessException{
         try (Connection conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT authToken, username FROM UserData WHERE authToken =?";
+            var statement = "SELECT username, password, email FROM UserData WHERE username =?";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
-                ps.setString(1, authToken);
+                ps.setString(1, username);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         return translateResults(rs);
@@ -38,7 +38,7 @@ public class SQLUserDAO extends BaseSQLDAO implements UserDAO{
     public ArrayList<UserData> readAll() throws DataAccessException{
         ArrayList<UserData> result = new ArrayList<>();
         try (Connection conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT authToken, username FROM UserData";
+            var statement = "SELECT username, password, email FROM UserData";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
@@ -58,14 +58,11 @@ public class SQLUserDAO extends BaseSQLDAO implements UserDAO{
         executeUpdate(statement);
     }
 
-    private String createPasswordHash(){
-
-    }
-
     private UserData translateResults(ResultSet rs) throws SQLException {
-        var authToken = rs.getString("authToken");
         var username = rs.getString("username");
-        return new UserData(authToken, username);
+        var password = rs.getString("password");
+        var email = rs.getString("email");
+        return new UserData(username, password, email);
     }
 
 

@@ -1,9 +1,11 @@
 package service;
 
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import dataaccess.UserDAO;
 import model.AuthData;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 import requests.*;
 import results.*;
 
@@ -20,7 +22,7 @@ public class UserService {
         this.userDAO = userDAO;
     }
 
-    public RegisterResult register(RegisterRequest request) throws AlreadyTakenException{
+    public RegisterResult register(RegisterRequest request) throws AlreadyTakenException, DataAccessException{
         String username = request.username();
 
         //find if username already exists in userdata
@@ -32,7 +34,7 @@ public class UserService {
         }
 
         //else:add the user to user data
-        userDAO.create(new UserData(username, request.password(), request.email()));
+        userDAO.create(new UserData(username, createPasswordHash(request.password()), request.email()));
         //decided to creat the Data models here because service has full control and info
 
         //create authData
@@ -47,9 +49,9 @@ public class UserService {
         return UUID.randomUUID().toString();
     }
 
-    public LoginResult login(LoginRequest request) throws UnauthorizedUserException{
+    public LoginResult login(LoginRequest request) throws UnauthorizedUserException, DataAccessException{
         String username = request.username();
-        String password = request.password();
+        String textPassword = request.password();
 
         //find if username already exists in userdata
         UserData user = userDAO.findUser(username);
@@ -60,7 +62,7 @@ public class UserService {
         }
 
         //check that the given password is correct
-        if(!user.password().equals(password)){
+        if(!verifyPassword(textPassword, user.password())){
             throw new UnauthorizedUserException("Error: Unauthorized");
         }
 
@@ -72,7 +74,7 @@ public class UserService {
         return new LoginResult(username, authToken);
     }
 
-    public LogoutResult logout(LogoutRequest request) throws UnauthorizedUserException{
+    public LogoutResult logout(LogoutRequest request) throws UnauthorizedUserException, DataAccessException {
         String authToken = request.authToken();
 
         //find if  user authorized
@@ -88,6 +90,14 @@ public class UserService {
 
         //create and return register result
         return new LogoutResult();
+    }
+
+    private String createPasswordHash(String textPassword){
+        return BCrypt.hashpw(textPassword, BCrypt.gensalt());
+    }
+
+    private boolean verifyPassword(String clearTextPassword, String hashedPassword){
+        return BCrypt.checkpw(clearTextPassword, hashedPassword);
     }
 
 
