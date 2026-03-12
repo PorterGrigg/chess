@@ -29,7 +29,7 @@ public class SQLUserDAO extends BaseSQLDAO implements UserDAO{
                 }
             }
         } catch (Exception e) {
-            throw new DataAccessException("unable to read data");
+            throw new DataAccessException("Error: unable to read data");
         }
         return null;
     }
@@ -47,15 +47,19 @@ public class SQLUserDAO extends BaseSQLDAO implements UserDAO{
                 }
             }
         } catch (Exception e) {
-            throw new DataAccessException("unable to read data");
+            throw new DataAccessException("Error: unable to read data");
         }
         return result;
     }
 
     @Override
     public void clear() throws DataAccessException{
-        var statement = "TRUNCATE UserData";
-        executeUpdate(statement);
+        try{
+            var statement = "TRUNCATE UserData";
+            executeUpdate(statement);
+        } catch (Exception e) {
+            throw new DataAccessException("Error: unable to read data");
+        }
     }
 
     private UserData translateResults(ResultSet rs) throws SQLException {

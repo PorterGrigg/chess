@@ -18,6 +18,12 @@ public class MemoryGameDAO extends BaseMemoryDAO<GameData> implements GameDAO{
     }
 
     @Override
+    public int create(GameData data) {
+        generalStorage.add(data);
+        return data.gameID();
+    }
+
+    @Override
     public void updateGame(int gameID, ChessGame.TeamColor playerColor, String username){
 
         for (int i = 0; i < generalStorage.size(); i++) {

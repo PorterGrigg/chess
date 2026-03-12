@@ -1,6 +1,7 @@
 package service;
 
 import chess.ChessGame;
+import dataaccess.DataAccessException;
 import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryGameDAO;
 import dataaccess.MemoryUserDAO;
@@ -33,7 +34,7 @@ public class ServicesTests {
 
     @Test
     @DisplayName("Clear Data Positive")
-    public void clearAllPositiveTest() {
+    public void clearAllPositiveTest() throws DataAccessException {
         //initialize DAO
         authDAO = new MemoryAuthDAO();
         userDAO = new MemoryUserDAO();
@@ -65,7 +66,7 @@ public class ServicesTests {
 
     @Test
     @DisplayName("Register Positive")
-    public void registerPositiveTest() {
+    public void registerPositiveTest() throws DataAccessException{
         //initialize DAO
         authDAO = new MemoryAuthDAO();
         userDAO = new MemoryUserDAO();
@@ -99,7 +100,7 @@ public class ServicesTests {
 
     @Test
     @DisplayName("Register Negative")
-    public void registerNegativeTest() {
+    public void registerNegativeTest() throws DataAccessException{
         //initialize DAO
         authDAO = new MemoryAuthDAO();
         userDAO = new MemoryUserDAO();
@@ -146,7 +147,7 @@ public class ServicesTests {
 
     @Test
     @DisplayName("Login Positive")
-    public void loginPositiveTest() {
+    public void loginPositiveTest() throws DataAccessException{
         //initialize DAO
         authDAO = new MemoryAuthDAO();
         userDAO = new MemoryUserDAO();
@@ -170,7 +171,7 @@ public class ServicesTests {
 
     @Test
     @DisplayName("Logout Positive")
-    public void logoutPositiveTest() {
+    public void logoutPositiveTest() throws DataAccessException{
         //initialize DAO
         authDAO = new MemoryAuthDAO();
         userDAO = new MemoryUserDAO();
@@ -218,7 +219,7 @@ public class ServicesTests {
 
     @Test
     @DisplayName("Create Positive")
-    public void createPositiveTest() {
+    public void createPositiveTest() throws DataAccessException{
         //initialize DAO
         authDAO = new MemoryAuthDAO();
         userDAO = new MemoryUserDAO();
@@ -267,7 +268,7 @@ public class ServicesTests {
 
     @Test
     @DisplayName("Join Positive")
-    public void joinPositiveTest() {
+    public void joinPositiveTest() throws DataAccessException{
         //initialize DAO
         authDAO = new MemoryAuthDAO();
         userDAO = new MemoryUserDAO();
@@ -313,7 +314,7 @@ public class ServicesTests {
 
     @Test
     @DisplayName("List Positive")
-    public void listPositiveTest() {
+    public void listPositiveTest() throws DataAccessException{
         //initialize DAO
         authDAO = new MemoryAuthDAO();
         userDAO = new MemoryUserDAO();

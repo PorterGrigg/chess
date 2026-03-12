@@ -29,7 +29,7 @@ public class SQLAuthDAO extends BaseSQLDAO implements AuthDAO{
                 }
             }
         } catch (Exception e) {
-            throw new DataAccessException("unable to read data");
+            throw new DataAccessException("Error: unable to read data");
         }
         return null;
     }
@@ -47,7 +47,7 @@ public class SQLAuthDAO extends BaseSQLDAO implements AuthDAO{
                 }
             }
         } catch (Exception e) {
-            throw new DataAccessException("unable to read data");
+            throw new DataAccessException("Error: unable to read data");
         }
         return result;
     }
@@ -60,8 +60,13 @@ public class SQLAuthDAO extends BaseSQLDAO implements AuthDAO{
 
     @Override
     public void clear() throws DataAccessException{
-        var statement = "TRUNCATE AuthData";
-        executeUpdate(statement);
+        try{
+            var statement = "TRUNCATE AuthData";
+            executeUpdate(statement);
+        } catch (Exception e) {
+            throw new DataAccessException("Error: unable to read data");
+        }
+
     }
 
     private AuthData translateResults(ResultSet rs) throws SQLException {

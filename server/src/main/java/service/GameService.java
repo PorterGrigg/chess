@@ -17,6 +17,8 @@ public class GameService {
     private final AuthDAO authDAO;
     private final GameDAO gameDAO;
 
+    private int nextGameID = 0;
+
     public GameService(AuthDAO authDAO, GameDAO gameDAO){
         this.authDAO = authDAO;
         this.gameDAO = gameDAO;
@@ -30,7 +32,7 @@ public class GameService {
 
         //if username does not exist then throw error
         if(authorization == null){
-            throw new UnauthorizedUserException("AuthToken Not Found");
+            throw new UnauthorizedUserException("Error: AuthToken Not Found");
         }
 
         //read all the games
@@ -50,15 +52,22 @@ public class GameService {
 
         //if username does not exist then throw error
         if(authorization == null){
-            throw new UnauthorizedUserException("AuthToken Not Found");
+            throw new UnauthorizedUserException("Error: AuthToken Not Found");
         }
 
         //create and add a new game
-        int gameID = gameDAO.create(new GameData(0, null, null, gameName, new ChessGame()));
+        //ID creation is for memoryDOA
+        int tempGameID = createID();
+        int gameID = gameDAO.create(new GameData(tempGameID, null, null, gameName, new ChessGame()));
         //gameID is created by the SQL DB
 
         //create and return result
         return new CreateResult(gameID);
+    }
+
+    private int createID(){
+        nextGameID++; //increment from last use
+        return nextGameID;
     }
 
     public JoinResult join(JoinRequest request) throws UnauthorizedUserException, AlreadyTakenException, DataAccessException{
@@ -72,7 +81,7 @@ public class GameService {
 
         //if username does not exist then throw error
         if(authorization == null){
-            throw new UnauthorizedUserException("AuthToken Not Found");
+            throw new UnauthorizedUserException("Error: AuthToken Not Found");
         }
 
         //check that user is not trying to steal another player's color

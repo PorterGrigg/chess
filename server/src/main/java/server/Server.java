@@ -29,11 +29,16 @@ public class Server {
 
         //this is where it is specified if the DAOs are memory or if they are SQL database
         //initialize the DAOs (which are memory here)
+        AuthDAO authDAO;
+        UserDAO userDAO;
+        GameDAO gameDAO;
+
         try {
-            AuthDAO authDAO = new SQLAuthDAO();
-            UserDAO userDAO = new SQLUserDAO();
-            GameDAO gameDAO = new SQLGameDAO();
+            authDAO = new SQLAuthDAO();
+            userDAO = new SQLUserDAO();
+            gameDAO = new SQLGameDAO();
         } catch(DataAccessException ex) {
+            throw new RuntimeException("Failed to initialize DAOs", ex);
             //what is done with this exception?
         }
 

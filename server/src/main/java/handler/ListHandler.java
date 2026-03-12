@@ -45,7 +45,7 @@ public class ListHandler {
         }
         catch (DataAccessException exception) {
             ctx.status(500);
-            ctx.result(new Gson().toJson(new ErrorResult( exception.getMessage())));
+            ctx.result(new Gson().toJson(new ErrorResult(exception.getMessage())));
         }
 
     }

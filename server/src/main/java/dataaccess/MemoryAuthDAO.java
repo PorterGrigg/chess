@@ -4,6 +4,10 @@ import model.*;
 
 public class MemoryAuthDAO extends BaseMemoryDAO<AuthData> implements AuthDAO{
 
+    public void create(AuthData data) {
+        generalStorage.add(data);
+    }
+
     @Override
     public AuthData findAuth(String authToken){
         for (int i = 0; i < generalStorage.size(); i++) {

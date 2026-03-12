@@ -37,7 +37,7 @@ public class SQLGameDAO extends BaseSQLDAO implements GameDAO {
                 }
             }
         } catch (Exception e) {
-            throw new DataAccessException("unable to read data");
+            throw new DataAccessException("Error: unable to read data");
         }
         return null;
     }
@@ -75,7 +75,7 @@ public class SQLGameDAO extends BaseSQLDAO implements GameDAO {
                 ps.executeUpdate();
             }
         } catch (Exception e) {
-            throw new DataAccessException("unable to read data");
+            throw new DataAccessException("Error: unable to read data");
         }
     }
 
@@ -92,15 +92,19 @@ public class SQLGameDAO extends BaseSQLDAO implements GameDAO {
                 }
             }
         } catch (Exception e) {
-            throw new DataAccessException("unable to read data");
+            throw new DataAccessException("Error: unable to read data");
         }
         return result;
     }
 
     @Override
     public void clear() throws DataAccessException {
-        var statement = "TRUNCATE GameData";
-        executeUpdate(statement);
+        try{
+            var statement = "TRUNCATE GameData";
+            executeUpdate(statement);
+        } catch (Exception e) {
+            throw new DataAccessException("Error: unable to read data");
+        }
     }
 
     private GameData translateResults(ResultSet rs) throws SQLException {
