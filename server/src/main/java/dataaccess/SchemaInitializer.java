@@ -5,7 +5,7 @@ import java.sql.SQLException;
 
 public class SchemaInitializer {
 
-    private static final String[] createAuthDataStatement = {
+    private static final String[] CREATE_AUTH_DATA_STATEMENT = {
             """
         CREATE TABLE IF NOT EXISTS  AuthData (
           `authToken` varchar(256) NOT NULL,
@@ -14,9 +14,10 @@ public class SchemaInitializer {
           INDEX(username)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
         """
-    }; //index allows faster queries //Last line specifies the engine we use in SQL, the set of characters, and the way characters are sorted
+    }; //index allows faster queries //Last line specifies the engine we use in
+    // SQL, the set of characters, and the way characters are sorted
 
-    private static final String[] createUserDataStatement = {
+    private static final String[] CREATE_USER_DATA_STATEMENT = {
             """
         CREATE TABLE IF NOT EXISTS  UserData (
           `username` varchar(256) NOT NULL,
@@ -29,7 +30,7 @@ public class SchemaInitializer {
         """
     };
 
-    private static final String[] createGameDataStatement = {
+    private static final String[] CREATE_GAME_DATA_STATEMENT = {
             """
         CREATE TABLE IF NOT EXISTS  GameData (
           `gameID` int NOT NULL AUTO_INCREMENT,
@@ -48,17 +49,17 @@ public class SchemaInitializer {
     public static void createTables() throws DataAccessException{
         try (
                 Connection conn = DatabaseManager.getConnection()) {
-            for (String statement : createAuthDataStatement) {
+            for (String statement : CREATE_AUTH_DATA_STATEMENT) {
                 try (var preparedStatement = conn.prepareStatement(statement)) {
                     preparedStatement.executeUpdate();
                 }
             }
-            for (String statement : createUserDataStatement) {
+            for (String statement : CREATE_USER_DATA_STATEMENT) {
                 try (var preparedStatement = conn.prepareStatement(statement)) {
                     preparedStatement.executeUpdate();
                 }
             }
-            for (String statement : createGameDataStatement) {
+            for (String statement : CREATE_GAME_DATA_STATEMENT) {
                 try (var preparedStatement = conn.prepareStatement(statement)) {
                     preparedStatement.executeUpdate();
                 }

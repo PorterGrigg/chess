@@ -113,7 +113,8 @@ public class SQLGameDAO extends BaseSQLDAO implements GameDAO {
         var blackUsername = rs.getString("blackUsername");
         var gameName = rs.getString("gameName");
         var jsonGame = rs.getString("game");
-        chess.ChessGame game = new Gson().fromJson(jsonGame, ChessGame.class); //translate it back from json to a chesss game
+        chess.ChessGame game = new Gson().fromJson(jsonGame, ChessGame.class);
+        //translate it back from json to a chesss game
         return new GameData(gameID, whiteUsername, blackUsername, gameName, game);
     }
 }
