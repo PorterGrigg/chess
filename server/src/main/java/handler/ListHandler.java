@@ -1,6 +1,7 @@
 package handler;
 
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
 import io.javalin.http.Context;
 
 import results.ErrorResult;
@@ -41,6 +42,10 @@ public class ListHandler {
         catch (UnauthorizedUserException exception){
             ctx.status(401);
             ctx.result(new Gson().toJson(new ErrorResult(exception.getMessage())));
+        }
+        catch (DataAccessException exception) {
+            ctx.status(500);
+            ctx.result(new Gson().toJson(new ErrorResult( exception.getMessage())));
         }
 
     }

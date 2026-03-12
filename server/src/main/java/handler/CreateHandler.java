@@ -1,9 +1,10 @@
 package handler;
 
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
 import io.javalin.http.Context;
 
-import requests.LoginRequest;
+
 import results.ErrorResult;
 import service.GameService;
 import service.UnauthorizedUserException;
@@ -45,6 +46,9 @@ public class CreateHandler {
         }
         catch (UnauthorizedUserException exception){
             ctx.status(401);
+            ctx.result(new Gson().toJson(new ErrorResult( exception.getMessage())));
+        }catch (DataAccessException exception) {
+            ctx.status(500);
             ctx.result(new Gson().toJson(new ErrorResult( exception.getMessage())));
         }
 

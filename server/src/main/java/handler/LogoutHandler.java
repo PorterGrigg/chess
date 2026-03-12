@@ -1,10 +1,10 @@
 package handler;
 
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
 import io.javalin.http.Context;
 
 import results.ErrorResult;
-import service.AlreadyTakenException;
 import service.UnauthorizedUserException;
 import service.UserService;
 import requests.LogoutRequest;
@@ -41,6 +41,10 @@ public class LogoutHandler {
         catch (UnauthorizedUserException exception){
             ctx.status(401);
             ctx.result(new Gson().toJson(new ErrorResult(exception.getMessage())));
+        }
+        catch (DataAccessException exception) {
+            ctx.status(500);
+            ctx.result(new Gson().toJson(new ErrorResult( exception.getMessage())));
         }
 
     }

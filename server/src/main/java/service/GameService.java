@@ -2,6 +2,7 @@ package service;
 
 import chess.ChessGame;
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import model.AuthData;
 import model.GameData;
@@ -16,14 +17,12 @@ public class GameService {
     private final AuthDAO authDAO;
     private final GameDAO gameDAO;
 
-    private int nextGameID = 0;
-
     public GameService(AuthDAO authDAO, GameDAO gameDAO){
         this.authDAO = authDAO;
         this.gameDAO = gameDAO;
     }
 
-    public ListResult list(ListRequest request) throws UnauthorizedUserException{
+    public ListResult list(ListRequest request) throws UnauthorizedUserException, DataAccessException {
         String authToken = request.authToken();
 
         //find if  user authorized
@@ -42,7 +41,7 @@ public class GameService {
     }
 
 
-    public CreateResult create(CreateRequest request) throws UnauthorizedUserException{
+    public CreateResult create(CreateRequest request) throws UnauthorizedUserException, DataAccessException{
         String authToken = request.authToken();
         String gameName = request.gameName();
 
@@ -62,12 +61,7 @@ public class GameService {
         return new CreateResult(gameID);
     }
 
-    private int createID(){
-        nextGameID++; //increment from last use
-        return nextGameID;
-    }
-
-    public JoinResult join(JoinRequest request) throws UnauthorizedUserException, AlreadyTakenException{
+    public JoinResult join(JoinRequest request) throws UnauthorizedUserException, AlreadyTakenException, DataAccessException{
         String authToken = request.authToken();
         chess.ChessGame.TeamColor playerColor = request.playerColor();
         int gameID = request.gameID();

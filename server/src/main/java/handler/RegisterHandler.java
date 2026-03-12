@@ -1,6 +1,7 @@
 package handler;
 
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
 import io.javalin.http.Context;
 
 import results.ErrorResult;
@@ -20,7 +21,8 @@ public class RegisterHandler {
     public void handle(Context ctx) {
 
         //convert json form to our request form
-        RegisterRequest request = new Gson().fromJson(ctx.body(), RegisterRequest.class); //copying the pet shop deserialization
+        RegisterRequest request = new Gson().fromJson(ctx.body(), RegisterRequest.class);
+        //copying the pet shop deserialization
 
         if(request.username() == null | request.password() == null | request.email() == null){
             //throw new BadRequestResponse("Error: bad request");
@@ -40,6 +42,10 @@ public class RegisterHandler {
         catch (AlreadyTakenException exception){
             ctx.status(403);
             ctx.result(new Gson().toJson(new ErrorResult(exception.getMessage())));
+        }
+        catch (DataAccessException exception) {
+            ctx.status(500);
+            ctx.result(new Gson().toJson(new ErrorResult( exception.getMessage())));
         }
 
     }

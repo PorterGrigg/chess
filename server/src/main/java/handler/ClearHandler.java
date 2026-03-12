@@ -1,11 +1,14 @@
 package handler;
 
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
 import io.javalin.http.Context;
+import io.javalin.http.Handler;
 import results.ClearResult;
+import results.ErrorResult;
 import service.ClearService;
 
-public class ClearHandler extends BaseHandler{
+public class ClearHandler implements Handler {
 
     private final ClearService clearService;
 
@@ -16,10 +19,15 @@ public class ClearHandler extends BaseHandler{
 
     @Override
     public void handle(Context ctx) {
-        ClearResult result = clearService.clearAll();
+        try {
+            ClearResult result = clearService.clearAll();
 
-        ctx.status(200);
-        ctx.result(new Gson().toJson(result));
+            ctx.status(200);
+            ctx.result(new Gson().toJson(result));
+        }catch (DataAccessException exception) {
+            ctx.status(500);
+            ctx.result(new Gson().toJson(new ErrorResult( exception.getMessage())));
+        }
     }
 }
 
