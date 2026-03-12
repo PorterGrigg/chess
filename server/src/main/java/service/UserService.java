@@ -92,11 +92,11 @@ public class UserService {
         return new LogoutResult();
     }
 
-    private String createPasswordHash(String textPassword){
+    public String createPasswordHash(String textPassword){
         return BCrypt.hashpw(textPassword, BCrypt.gensalt());
     }
 
-    private boolean verifyPassword(String clearTextPassword, String hashedPassword){
+    public boolean verifyPassword(String clearTextPassword, String hashedPassword){
         return BCrypt.checkpw(clearTextPassword, hashedPassword);
     }
 

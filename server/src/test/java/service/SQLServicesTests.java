@@ -1,11 +1,9 @@
 package service;
 
 import chess.ChessGame;
-import dataaccess.DataAccessException;
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryGameDAO;
-import dataaccess.MemoryUserDAO;
+import dataaccess.*;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName; //I was trying to match the provided chesssboard tests
 import org.junit.jupiter.api.Test;
 import model.AuthData;
@@ -20,11 +18,11 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ServicesTests {
+public class SQLServicesTests {
 
-    private MemoryAuthDAO authDAO;
-    private MemoryUserDAO userDAO;
-    private MemoryGameDAO gameDAO;
+    private SQLAuthDAO authDAO;
+    private SQLUserDAO userDAO;
+    private SQLGameDAO gameDAO;
 
     private ClearService clearService;
     private UserService userService;
@@ -32,18 +30,30 @@ public class ServicesTests {
 
 
 
+    @BeforeEach
+    public void setUp() throws DataAccessException {
+        authDAO = new SQLAuthDAO();
+        userDAO = new SQLUserDAO();
+        gameDAO = new SQLGameDAO();
+
+        // clear all tables
+        ClearService clearService = new ClearService(authDAO, userDAO, gameDAO);
+        clearService.clearAll();
+    }
+
     @Test
     @DisplayName("Clear Data Positive")
     public void clearAllPositiveTest() throws DataAccessException {
         //initialize DAO
-        authDAO = new MemoryAuthDAO();
-        userDAO = new MemoryUserDAO();
-        gameDAO = new MemoryGameDAO();
+        authDAO = new SQLAuthDAO();
+        userDAO = new SQLUserDAO();
+        gameDAO = new SQLGameDAO();
 
         //add data toDOA
         authDAO.create(new AuthData("auth1", "porker"));
         userDAO.create(new UserData("porker", "password", "porker@byu.edu"));
-        gameDAO.create(new GameData(10, "porker", "piggy", "game1", null));
+        gameDAO.create(new GameData(10, "porker", "piggy",
+                "game1", null));
 
         clearService = new ClearService(authDAO, userDAO, gameDAO);
 
@@ -68,9 +78,9 @@ public class ServicesTests {
     @DisplayName("Register Positive")
     public void registerPositiveTest() throws DataAccessException{
         //initialize DAO
-        authDAO = new MemoryAuthDAO();
-        userDAO = new MemoryUserDAO();
-        gameDAO = new MemoryGameDAO();
+        authDAO = new SQLAuthDAO();
+        userDAO = new SQLUserDAO();
+        gameDAO = new SQLGameDAO();
 
         //add data toDOA
         authDAO.create(new AuthData("auth1", "porker"));
@@ -102,9 +112,9 @@ public class ServicesTests {
     @DisplayName("Register Negative")
     public void registerNegativeTest() throws DataAccessException{
         //initialize DAO
-        authDAO = new MemoryAuthDAO();
-        userDAO = new MemoryUserDAO();
-        gameDAO = new MemoryGameDAO();
+        authDAO = new SQLAuthDAO();
+        userDAO = new SQLUserDAO();
+        gameDAO = new SQLGameDAO();
 
         //add data toDOA
         authDAO.create(new AuthData("auth1", "porker"));
@@ -119,23 +129,25 @@ public class ServicesTests {
 
         //assert that the register result failed
         //assertNull(result); //come back and fix later when add in the exceptions
-        assertThrows(AlreadyTakenException.class, () -> userService.register(request)); //using lambda function inside of this assertThrows
+        assertThrows(AlreadyTakenException.class, () -> userService.register(request));
+        //using lambda function inside of this assertThrows
 
     }
 
     @Test
     @DisplayName("Login Negative")
-    public void loginNegativeTest() {
+    public void loginNegativeTest() throws DataAccessException{
         //initialize DAO
-        authDAO = new MemoryAuthDAO();
-        userDAO = new MemoryUserDAO();
-        gameDAO = new MemoryGameDAO();
+        authDAO = new SQLAuthDAO();
+        userDAO = new SQLUserDAO();
+        gameDAO = new SQLGameDAO();
 
         userService = new UserService(authDAO, userDAO);
 
         //add data toDOA
         authDAO.create(new AuthData("auth1", "porker"));
-        userDAO.create(new UserData("Kermit", userService.createPasswordHash("password"), "porker@byu.edu"));
+        userDAO.create(new UserData("Kermit", userService.createPasswordHash("password"),
+                "porker@byu.edu"));
 
 
 
@@ -151,17 +163,18 @@ public class ServicesTests {
     @DisplayName("Login Positive")
     public void loginPositiveTest() throws DataAccessException{
         //initialize DAO
-        authDAO = new MemoryAuthDAO();
-        userDAO = new MemoryUserDAO();
-        gameDAO = new MemoryGameDAO();
+        authDAO = new SQLAuthDAO();
+        userDAO = new SQLUserDAO();
+        gameDAO = new SQLGameDAO();
 
         userService = new UserService(authDAO, userDAO);
 
         //add data toDOA
         authDAO.create(new AuthData("auth1", "porker"));
-        userDAO.create(new UserData("Kermit", userService.createPasswordHash("password"), "porker@byu.edu"));
+        userDAO.create(new UserData("Kermit", userService.createPasswordHash("password"),
+                "porker@byu.edu"));
 
-        userService = new UserService(authDAO, userDAO);
+
 
         //create new login request
         LoginRequest request = new LoginRequest("Kermit", "password");
@@ -177,15 +190,15 @@ public class ServicesTests {
     @DisplayName("Logout Positive")
     public void logoutPositiveTest() throws DataAccessException{
         //initialize DAO
-        authDAO = new MemoryAuthDAO();
-        userDAO = new MemoryUserDAO();
-        gameDAO = new MemoryGameDAO();
-
-        userService = new UserService(authDAO, userDAO);
+        authDAO = new SQLAuthDAO();
+        userDAO = new SQLUserDAO();
+        gameDAO = new SQLGameDAO();
 
         //add data toDOA
         authDAO.create(new AuthData("auth1", "porker"));
-        userDAO.create(new UserData("Kermit", userService.createPasswordHash("password"), "porker@byu.edu"));
+        userDAO.create(new UserData("Kermit", "password", "porker@byu.edu"));
+
+        userService = new UserService(authDAO, userDAO);
 
         //create new request
         LogoutRequest request = new LogoutRequest("auth1");
@@ -201,11 +214,11 @@ public class ServicesTests {
 
     @Test
     @DisplayName("Logout Negative")
-    public void logoutNegativeTest() {
+    public void logoutNegativeTest() throws DataAccessException{
         //initialize DAO
-        authDAO = new MemoryAuthDAO();
-        userDAO = new MemoryUserDAO();
-        gameDAO = new MemoryGameDAO();
+        authDAO = new SQLAuthDAO();
+        userDAO = new SQLUserDAO();
+        gameDAO = new SQLGameDAO();
 
         //add data toDOA
         authDAO.create(new AuthData("auth1", "porker"));
@@ -225,13 +238,14 @@ public class ServicesTests {
     @DisplayName("Create Positive")
     public void createPositiveTest() throws DataAccessException{
         //initialize DAO
-        authDAO = new MemoryAuthDAO();
-        userDAO = new MemoryUserDAO();
-        gameDAO = new MemoryGameDAO();
+        authDAO = new SQLAuthDAO();
+        userDAO = new SQLUserDAO();
+        gameDAO = new SQLGameDAO();
 
         //add data to DOA
         authDAO.create(new AuthData("auth1", "porker"));
-        gameDAO.create(new GameData(123, "PeterParker", "Batman", "DoodleJump", new ChessGame()));
+        gameDAO.create(new GameData(123, "PeterParker", "Batman",
+                "DoodleJump", new ChessGame()));
 
         gameService = new GameService(authDAO, gameDAO);
 
@@ -248,15 +262,16 @@ public class ServicesTests {
 
     @Test
     @DisplayName("Create Negative")
-    public void createNegativeTest() {
+    public void createNegativeTest() throws DataAccessException{
         //initialize DAO
-        authDAO = new MemoryAuthDAO();
-        userDAO = new MemoryUserDAO();
-        gameDAO = new MemoryGameDAO();
+        authDAO = new SQLAuthDAO();
+        userDAO = new SQLUserDAO();
+        gameDAO = new SQLGameDAO();
 
         //add data to DOA
         authDAO.create(new AuthData("auth1", "porker"));
-        gameDAO.create(new GameData(123, "PeterParker", "Batman", "DoodleJump", new ChessGame()));
+        gameDAO.create(new GameData(123, "PeterParker", "Batman",
+                "DoodleJump", new ChessGame()));
 
         gameService = new GameService(authDAO, gameDAO);
 
@@ -274,42 +289,44 @@ public class ServicesTests {
     @DisplayName("Join Positive")
     public void joinPositiveTest() throws DataAccessException{
         //initialize DAO
-        authDAO = new MemoryAuthDAO();
-        userDAO = new MemoryUserDAO();
-        gameDAO = new MemoryGameDAO();
+        authDAO = new SQLAuthDAO();
+        userDAO = new SQLUserDAO();
+        gameDAO = new SQLGameDAO();
 
         //add data to DOA
         authDAO.create(new AuthData("auth1", "Porker"));
-        gameDAO.create(new GameData(123, "PeterParker",null, "DoodleJump", new ChessGame()));
+        int gameID = gameDAO.create(new GameData(123, "PeterParker",null,
+                "DoodleJump", new ChessGame()));
 
         gameService = new GameService(authDAO, gameDAO);
 
         //create new request
-        JoinRequest request = new JoinRequest("auth1", ChessGame.TeamColor.BLACK, 123);
+        JoinRequest request = new JoinRequest("auth1", ChessGame.TeamColor.BLACK, gameID);
 
         gameService.join(request);
 
         //find the gamdata
-        GameData game = gameDAO.findGame(123);
+        GameData game = gameDAO.findGame(gameID);
         assertEquals("Porker", game.blackUsername());
     }
 
     @Test
     @DisplayName("Join Negative")
-    public void joinNegativeTest() {
+    public void joinNegativeTest() throws DataAccessException{
         //initialize DAO
-        authDAO = new MemoryAuthDAO();
-        userDAO = new MemoryUserDAO();
-        gameDAO = new MemoryGameDAO();
+        authDAO = new SQLAuthDAO();
+        userDAO = new SQLUserDAO();
+        gameDAO = new SQLGameDAO();
 
         //add data to DOA
         authDAO.create(new AuthData("auth1", "porker"));
-        gameDAO.create(new GameData(123, "PeterParker", "Batman", "DoodleJump", new ChessGame()));
+        int gameID = gameDAO.create(new GameData(123, "PeterParker", "Batman",
+                "DoodleJump", new ChessGame()));
 
         gameService = new GameService(authDAO, gameDAO);
 
         //create new request
-        JoinRequest request = new JoinRequest("auth1", ChessGame.TeamColor.WHITE, 123);
+        JoinRequest request = new JoinRequest("auth1", ChessGame.TeamColor.WHITE, gameID);
 
         //JoinResult result = gameService.join(request);
 
@@ -320,13 +337,14 @@ public class ServicesTests {
     @DisplayName("List Positive")
     public void listPositiveTest() throws DataAccessException{
         //initialize DAO
-        authDAO = new MemoryAuthDAO();
-        userDAO = new MemoryUserDAO();
-        gameDAO = new MemoryGameDAO();
+        authDAO = new SQLAuthDAO();
+        userDAO = new SQLUserDAO();
+        gameDAO = new SQLGameDAO();
 
         //add data to DOA
         authDAO.create(new AuthData("auth1", "Porker"));
-        gameDAO.create(new GameData(123, "PeterParker",null, "DoodleJump", new ChessGame()));
+        gameDAO.create(new GameData(123, "PeterParker",null,
+                "DoodleJump", new ChessGame()));
 
         gameService = new GameService(authDAO, gameDAO);
 
@@ -338,8 +356,10 @@ public class ServicesTests {
         //Assert size is 1
         assertEquals(1, result.games().size());
 
-        gameDAO.create(new GameData(124, "Joker","Nokia", "RegShow", new ChessGame()));
-        gameDAO.create(new GameData(125, "JigglyPuff","FlynnRider", "Hearts", new ChessGame()));
+        gameDAO.create(new GameData(124, "Joker","Nokia",
+                "RegShow", new ChessGame()));
+        gameDAO.create(new GameData(125, "JigglyPuff","FlynnRider",
+                "Hearts", new ChessGame()));
 
         //After adding make sure size increases
         ListResult newResult = gameService.list(request);
@@ -348,15 +368,16 @@ public class ServicesTests {
 
     @Test
     @DisplayName("List Negative")
-    public void listNegativeTest() {
+    public void listNegativeTest() throws DataAccessException{
         //initialize DAO
-        authDAO = new MemoryAuthDAO();
-        userDAO = new MemoryUserDAO();
-        gameDAO = new MemoryGameDAO();
+        authDAO = new SQLAuthDAO();
+        userDAO = new SQLUserDAO();
+        gameDAO = new SQLGameDAO();
 
         //add data to DOA
         authDAO.create(new AuthData("auth1", "porker"));
-        gameDAO.create(new GameData(123, "PeterParker", "Batman", "DoodleJump", new ChessGame()));
+        gameDAO.create(new GameData(123, "PeterParker", "Batman",
+                "DoodleJump", new ChessGame()));
 
         gameService = new GameService(authDAO, gameDAO);
 
