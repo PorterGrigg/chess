@@ -12,7 +12,7 @@ public class SQLUserDAO extends BaseSQLDAO implements UserDAO{
 
     @Override
     public void create(UserData userData) throws DataAccessException{
-        var statement = "INSERT INTO userData (username, password, email) VALUES (?, ?, ?)";
+        var statement = "INSERT INTO UserData (username, password, email) VALUES (?, ?, ?)";
         executeUpdate(statement, userData.username(), userData.password(), userData.email());
     }
 

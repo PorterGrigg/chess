@@ -55,8 +55,8 @@ public class GameService {
         }
 
         //create and add a new game
-        int gameID = createID();
-        gameDAO.create(new GameData(gameID, null, null, gameName, new ChessGame()));
+        int gameID = gameDAO.create(new GameData(0, null, null, gameName, new ChessGame()));
+        //gameID is created by the SQL DB
 
         //create and return result
         return new CreateResult(gameID);
