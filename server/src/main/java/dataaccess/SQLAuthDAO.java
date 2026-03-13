@@ -54,6 +54,12 @@ public class SQLAuthDAO extends BaseSQLDAO implements AuthDAO{
 
     @Override
     public void deleteAuth(String authToken) throws  DataAccessException{
+        //check that deleting exists
+        AuthData foundAuth = findAuth(authToken);
+        if (foundAuth == null){
+            throw new DataAccessException("Error: Data does not exist");
+        }
+
         var statement = "DELETE FROM AuthData WHERE authToken=?";
         executeUpdate(statement, authToken);
     }

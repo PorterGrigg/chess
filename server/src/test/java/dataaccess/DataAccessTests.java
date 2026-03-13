@@ -16,8 +16,10 @@ import model.UserData;
 
 import requests.*;
 import results.*;
+import service.AlreadyTakenException;
 import service.ClearService;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,6 +53,104 @@ public class DataAccessTests {
         authDAO.clear();
 
         assertTrue(authDAO.readAll().isEmpty());
+    }
+
+    @Test
+    @DisplayName("AuthDAO Create Positive")
+    public void createAuthPositiveTest() throws DataAccessException {
+        ArrayList<AuthData> beforeList = authDAO.readAll();
+
+        assertTrue(beforeList.isEmpty());
+
+        authDAO.create(new AuthData("auth1", "porker"));
+
+        List<AuthData> afterList = authDAO.readAll();
+        assertFalse(afterList.isEmpty());
+    }
+
+    @Test
+    @DisplayName("AuthDAO Create Negative")
+    public void createAuthNegativeTest() throws DataAccessException {
+        assertThrows(DataAccessException.class, () -> authDAO.create(new AuthData(null, "porker")));
+    } //negative because fields cannot be negative
+
+    @Test
+    @DisplayName("AuthDAO Find Positive")
+    public void findAuthPositiveTest() throws DataAccessException {
+
+        authDAO.create(new AuthData("auth1", "porker"));
+
+        AuthData foundAuth = authDAO.findAuth("auth1");
+
+        assertEquals("porker", foundAuth.username());
+    }
+
+    @Test
+    @DisplayName("AuthDAO Find Negative")
+    public void findAuthNegativeTest() throws DataAccessException {
+
+        authDAO.create(new AuthData("auth1", "porker"));
+
+        AuthData foundAuth = authDAO.findAuth("none");
+
+        assertNull(foundAuth); //returns null if not found
+    }
+
+    @Test
+    @DisplayName("AuthDAO readAll Positive")
+    public void readAllAuthPositiveTest() throws DataAccessException {
+        ArrayList<AuthData> beforeList = authDAO.readAll();
+
+        assertTrue(beforeList.isEmpty());
+
+        authDAO.create(new AuthData("auth1", "porker"));
+
+        List<AuthData> afterList = authDAO.readAll();
+        assertFalse(afterList.isEmpty());
+
+        authDAO.create(new AuthData("auth2", "peter"));
+        authDAO.create(new AuthData("auth3", "kip"));
+
+        List<AuthData> finalList = authDAO.readAll();
+        assertEquals(3, finalList.size());
+    }
+
+    @Test
+    @DisplayName("AuthDAO readAll Negative")
+    public void readAllAuthNegativeTest() throws DataAccessException {
+
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = conn.prepareStatement("DROP TABLE AuthData");
+            statement.executeUpdate();
+        } catch(Exception e){
+            throw new DataAccessException("Yeet");
+        }
+
+        //negative test will fail because the table has been deleted
+        assertThrows(DataAccessException.class, () -> authDAO.readAll());
+    }
+
+    @Test
+    @DisplayName("AuthDAO delete Positive")
+    public void deleteAuthPositiveTest() throws DataAccessException {
+        authDAO.create(new AuthData("auth1", "porker"));
+
+        assertNotNull(authDAO.findAuth("auth1"));
+
+        authDAO.deleteAuth("auth1");
+
+        assertNull(authDAO.findAuth("auth1"));
+    }
+
+    @Test
+    @DisplayName("AuthDAO delete Negative")
+    public void deleteAuthNegativeTest() throws DataAccessException {
+        authDAO.create(new AuthData("auth1", "porker"));
+
+        assertNotNull(authDAO.findAuth("auth1"));
+
+        //unclear if delete method is supposed to
+        assertThrows(DataAccessException.class, () ->authDAO.deleteAuth("auth2"));
     }
 
     //User Tests
