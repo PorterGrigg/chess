@@ -361,6 +361,4 @@ public class DataAccessTests {
         //negative test will fail because the table has been deleted
         assertThrows(DataAccessException.class, () -> gameDAO.readAll());
     }
-
-
 }
