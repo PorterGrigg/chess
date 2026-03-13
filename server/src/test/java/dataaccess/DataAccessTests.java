@@ -263,6 +263,104 @@ public class DataAccessTests {
         assertTrue(gameDAO.readAll().isEmpty());
     }
 
+    @Test
+    @DisplayName("GameDAO Create Positive")
+    public void createGamePositiveTest() throws DataAccessException {
+        ArrayList<GameData> beforeList = gameDAO.readAll();
+
+        assertTrue(beforeList.isEmpty());
+
+        gameDAO.create(new GameData(123, "hoboi", "porker",
+                "theGame", new ChessGame()));
+
+        List<GameData> afterList = gameDAO.readAll();
+        assertFalse(afterList.isEmpty());
+    }
+
+    @Test
+    @DisplayName("GameDAO Create Negative")
+    public void createGameNegativeTest() throws DataAccessException {
+        assertThrows(DataAccessException.class, () -> gameDAO.create(new GameData(123,
+                "hoboi", "porker", null, new ChessGame())));
+    } //negative because fields cannot be null
+
+    @Test
+    @DisplayName("GameDAO Find Positive")
+    public void findGamePositiveTest() throws DataAccessException {
+
+        int gameID = gameDAO.create(new GameData(123, "hoboi", "porker", "theGame", new ChessGame()));
+
+        GameData foundGame = gameDAO.findGame(gameID);
+
+        assertEquals("porker", foundGame.blackUsername());
+    }
+
+    @Test
+    @DisplayName("GameDAO Find Negative")
+    public void findGameNegativeTest() throws DataAccessException {
+
+        gameDAO.create(new GameData(123, "hoboi", "porker", "theGame", new ChessGame()));
+
+        GameData foundGame = gameDAO.findGame(456);
+
+        assertNull(foundGame); //returns null if not found
+    }
+
+    @Test
+    @DisplayName("GameDAO Update Positive")
+    public void updateGamePositiveTest() throws DataAccessException {
+
+        int gameID = gameDAO.create(new GameData(123, null, "porker", "theGame", new ChessGame()));
+
+        gameDAO.updateGame(gameID, ChessGame.TeamColor.WHITE, "YoMama");
+
+        GameData foundGame = gameDAO.findGame(gameID);
+
+        assertEquals("YoMama", foundGame.whiteUsername());
+    }
+
+    @Test
+    @DisplayName("GameDAO Update Negative")
+    public void updateGameNegativeTest() throws DataAccessException {
+
+        int gameID = gameDAO.create(new GameData(123, null, "porker", "theGame", new ChessGame()));
+
+        assertThrows(DataAccessException.class, ()->gameDAO.updateGame(gameID, ChessGame.TeamColor.BLACK, "YoMama"));
+    }
+
+    @Test
+    @DisplayName("GameDAO readAll Positive")
+    public void readAllGamePositiveTest() throws DataAccessException {
+        ArrayList<GameData> beforeList = gameDAO.readAll();
+
+        assertTrue(beforeList.isEmpty());
+
+        gameDAO.create(new GameData(123, "hoboi", "porker", "theGame", new ChessGame()));
+
+        List<GameData> afterList = gameDAO.readAll();
+        assertFalse(afterList.isEmpty());
+
+        gameDAO.create(new GameData(456, "hoboi", "porker", "theGame", new ChessGame()));
+        gameDAO.create(new GameData(789, "hoboi", "porker", "theGame", new ChessGame()));
+
+        List<GameData> finalList = gameDAO.readAll();
+        assertEquals(3, finalList.size());
+    }
+
+    @Test
+    @DisplayName("GameDAO readAll Negative")
+    public void readAllGameNegativeTest() throws DataAccessException {
+
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = conn.prepareStatement("DROP TABLE GameData");
+            statement.executeUpdate();
+        } catch(Exception e){
+            throw new DataAccessException("Yeet");
+        }
+
+        //negative test will fail because the table has been deleted
+        assertThrows(DataAccessException.class, () -> gameDAO.readAll());
+    }
 
 
 }

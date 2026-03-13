@@ -46,6 +46,15 @@ public class SQLGameDAO extends BaseSQLDAO implements GameDAO {
     public void updateGame(int gameID, ChessGame.TeamColor playerColor, String username) throws DataAccessException {
 
         GameData currGame = findGame(gameID);
+
+        //check that they are not trying ot overwrite an existing user
+        if (playerColor == ChessGame.TeamColor.BLACK && currGame.blackUsername() != null){
+            throw new DataAccessException("Error: Black color already taken");
+        }
+        else if (playerColor == ChessGame.TeamColor.WHITE && currGame.whiteUsername() != null){
+            throw new DataAccessException("Error: White color already taken");
+        }
+
         String whiteUsername;
         String blackUsername;
         if (playerColor == ChessGame.TeamColor.BLACK) {
