@@ -153,6 +153,8 @@ public class DataAccessTests {
         assertThrows(DataAccessException.class, () ->authDAO.deleteAuth("auth2"));
     }
 
+
+
     //User Tests
     @Test
     @DisplayName("UserDAO Clear Positive")
@@ -166,6 +168,85 @@ public class DataAccessTests {
 
         assertTrue(userDAO.readAll().isEmpty());
     }
+
+    @Test
+    @DisplayName("UserDAO Create Positive")
+    public void createUserPositiveTest() throws DataAccessException {
+        ArrayList<UserData> beforeList = userDAO.readAll();
+
+        assertTrue(beforeList.isEmpty());
+
+        userDAO.create(new UserData("porker", "hoboi", "porker@byu.edu"));
+
+        List<UserData> afterList = userDAO.readAll();
+        assertFalse(afterList.isEmpty());
+    }
+
+    @Test
+    @DisplayName("UserDAO Create Negative")
+    public void createUserNegativeTest() throws DataAccessException {
+        assertThrows(DataAccessException.class, () -> userDAO.create(new UserData(null, "hoboi", "porker@byu.edu")));
+    } //negative because fields cannot be null
+
+    @Test
+    @DisplayName("UserDAO Find Positive")
+    public void findUserPositiveTest() throws DataAccessException {
+
+        userDAO.create(new UserData("porker", "hoboi", "porker@byu.edu"));
+
+        UserData foundUser = userDAO.findUser("porker");
+
+        assertEquals("porker@byu.edu", foundUser.email());
+    }
+
+    @Test
+    @DisplayName("UserDAO Find Negative")
+    public void findUserNegativeTest() throws DataAccessException {
+
+        userDAO.create(new UserData("porker", "hoboi", "porker@byu.edu"));
+
+        UserData foundUser = userDAO.findUser("none");
+
+        assertNull(foundUser); //returns null if not found
+    }
+
+    @Test
+    @DisplayName("UserDAO readAll Positive")
+    public void readAllUserPositiveTest() throws DataAccessException {
+        ArrayList<UserData> beforeList = userDAO.readAll();
+
+        assertTrue(beforeList.isEmpty());
+
+        userDAO.create(new UserData("porker", "hoboi", "porker@byu.edu"));
+
+        List<UserData> afterList = userDAO.readAll();
+        assertFalse(afterList.isEmpty());
+
+        userDAO.create(new UserData("peter", "hoboi", "porker@byu.edu"));
+        userDAO.create(new UserData("parker", "hoboi", "porker@byu.edu"));
+
+        List<UserData> finalList = userDAO.readAll();
+        assertEquals(3, finalList.size());
+    }
+
+    @Test
+    @DisplayName("UserDAO readAll Negative")
+    public void readAllUserNegativeTest() throws DataAccessException {
+
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = conn.prepareStatement("DROP TABLE UserData");
+            statement.executeUpdate();
+        } catch(Exception e){
+            throw new DataAccessException("Yeet");
+        }
+
+        //negative test will fail because the table has been deleted
+        assertThrows(DataAccessException.class, () -> userDAO.readAll());
+    }
+
+
+
+
 
     //Game Tests
     @Test
@@ -181,5 +262,7 @@ public class DataAccessTests {
 
         assertTrue(gameDAO.readAll().isEmpty());
     }
+
+
 
 }
