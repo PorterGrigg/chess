@@ -2,30 +2,31 @@ package client;
 
 import chess.ChessGame;
 import chess.ChessPiece;
+import model.*;
 import requests.*;
 import results.*;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
+
 import static ui.EscapeSequences.*;
 
 public class UserREPL {
 
     private String userName;
     private String userAuthToken;
+    private String userPassword;
     private final ServerFacade serverFacade;
     private State state;
-    private Map<String, Integer> gameLookup;
+    private Map<Integer, Integer> gameLookup;
     //private String serverURL;
 
-    public UserREPL(ServerFacade givenServerFacade, String givenUserName, String givenUserAuthToken, State givenState) throws ResponseException {
+    public UserREPL(ServerFacade givenServerFacade, String givenUserName, String givenUserAuthToken, String givenPassword, State givenState) throws ResponseException {
         serverFacade = givenServerFacade;
         userAuthToken = givenUserAuthToken;
         userName = givenUserName;
         state = givenState;
         gameLookup = new HashMap<>();
+        userPassword = givenPassword;
     }
 
     public void run() {
@@ -73,7 +74,7 @@ public class UserREPL {
                 case "create" -> create(params);
                 case "list" -> list(params);
                 case "join" -> join(params);
-                case "observe" -> observe(params);
+                //case "observe" -> observe(params);
                 case "logout" -> logout(params);
                 case "quit" -> "quit";
                 default -> help();
@@ -100,29 +101,42 @@ public class UserREPL {
             CreateRequest request = new CreateRequest(userAuthToken, gameName);
             CreateResult result = serverFacade.createGame(request);
 
-            gameID = result.gameID();
-            userAuthToken = result.authToken();
-
             //this will return after the user logs out
             return  String.format("Your game \"%s!\" has been created!", gameName);
         }
         throw new ResponseException(ResponseException.Code.ClientError, "Expected: <yourname>");
     }
 
-    public String list(String... params) throws ResponseException {
-        if (params.length == 1) { //username and password
-            String gameName = params[0];
+    public String join(String... params) throws ResponseException {
+        if (params.length == 2) { //username and password
+            int gameNum = Integer.parseInt(params[0]);
+            String playerColor = params[1];
 
-            CreateRequest request = new CreateRequest(userAuthToken, gameName);
-            CreateResult result = serverFacade.createGame(request);
+            int gameID = getGameID(gameNum);
 
-            gameID = result.gameID();
-            userAuthToken = result.authToken();
+            ChessGame.TeamColor translatedPlayerColor = getPlayerColor(playerColor);
 
-            //this will return after the user logs out
-            return  String.format("Your game \"%s!\" has been created!", gameName);
+            JoinRequest request = new JoinRequest(userAuthToken, translatedPlayerColor, gameID);
+            JoinResult result = serverFacade.joinGame(request);
+
+            //change state machine
+            state = State.INGAME;
+            //new GameREPL(serverFacade, userName, userAuthToken, state).run();
+
+            //this will return after the user quits the game
+            return  String.format("Hope you play again soon %s!", userName);
         }
         throw new ResponseException(ResponseException.Code.ClientError, "Expected: <yourname>");
+    }
+
+    public String list(String... params) throws ResponseException {
+
+        ListRequest request = new ListRequest(userAuthToken);
+        ListResult result = serverFacade.listGames(request);
+
+        ArrayList<GameData> games = result.games();
+
+        return  updateGameLookupandGetString(games);
     }
 
     public String help() {
@@ -136,15 +150,68 @@ public class UserREPL {
                 """;
     }
 
-    private void assertSignedIn() throws ResponseException {
-        if (state == State.SIGNEDOUT) {
-            throw new ResponseException(ResponseException.Code.ClientError, "You must sign in");
+    private String updateGameLookupandGetString (ArrayList<GameData> games){
+        int index = 1;
+        String gameListString = "";
+
+        for (GameData game : games){
+            String white;
+            String black;
+            if (game.whiteUsername() == null){
+                white = "None";
+            }
+            else{
+                white = game.whiteUsername();
+            }
+            if (game.blackUsername() == null){
+                black = "None";
+            }
+            else{
+                black = game.blackUsername();
+            }
+
+            gameListString = gameListString + String.format("%d. %s — White Player: %s, Black Player: %s %n",
+                    index,
+                    game.gameName(),
+                    white,
+                    black
+            );
+
+            gameLookup.put(index, game.gameID());
+            index++;
         }
+        return gameListString;
     }
-//    public static void main(String[] args) {
+
+    private int getGameID(int gameNum) throws ResponseException{
+        int gameID = 0;
+        if (gameLookup.containsKey(gameNum)){
+            gameID = gameLookup.get(gameNum);
+        }
+        else{
+            throw new ResponseException(ResponseException.Code.ClientError, "Error: number out of range");
+        }
+        return gameID;
+    }
+
+    private ChessGame.TeamColor getPlayerColor(String input) throws ResponseException{
+        ChessGame.TeamColor playerColor;
+        String color = input.toLowerCase();
+        if (color.equals("white")){
+            playerColor = ChessGame.TeamColor.WHITE;
+        }
+        else if (color.equals("black")){
+            playerColor = ChessGame.TeamColor.BLACK;
+        }
+        else{
+            throw new ResponseException(ResponseException.Code.ClientError, "Error: invalid color");
+        }
+        return playerColor;
+    }
+
+//    private String getGameListString(ArrayList<GameData> games){
+//        //displays the games in a numbered list, including the game name and players (not observers) in the game.
 //
-//
-//        var piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
-//        System.out.println("♕ 240 Chess Client: " + piece);
+//        for ()
 //    }
 }

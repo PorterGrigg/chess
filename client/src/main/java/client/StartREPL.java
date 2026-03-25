@@ -106,9 +106,9 @@ public class StartREPL {
 
             //change state machine
             state = State.LOGGEDIN;
-            new UserREPL(serverFacade, userName, userAuthToken, state).run();
+            new UserREPL(serverFacade, userName, userAuthToken, password, state).run();
             //this will return after the user logs out
-            return  String.format("Hope you play again soon %s!", userName);
+            return  String.format("You are logged out %s \n Log in to play", userName);
         }
         throw new ResponseException(ResponseException.Code.ClientError, "Expected: <yourname>");
     }
