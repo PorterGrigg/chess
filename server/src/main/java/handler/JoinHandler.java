@@ -6,6 +6,7 @@ import io.javalin.http.Context;
 
 import results.ErrorResult;
 import service.AlreadyTakenException;
+import service.BadRequestException;
 import service.GameService;
 import service.UnauthorizedUserException;
 import requests.JoinRequest;
@@ -46,6 +47,10 @@ public class JoinHandler {
             //convert result to json and return
             ctx.status(200);
             ctx.result(new Gson().toJson(result));
+        }
+        catch (BadRequestException exception){
+            ctx.status(400);
+            ctx.result(new Gson().toJson(new ErrorResult("ClientError", exception.getMessage())));
         }
         catch (UnauthorizedUserException exception){
             ctx.status(401);

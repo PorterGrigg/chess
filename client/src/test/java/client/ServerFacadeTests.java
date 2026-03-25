@@ -1,10 +1,7 @@
 package client;
 
+
 import chess.ChessGame;
-import dataaccess.DataAccessException;
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryGameDAO;
-import dataaccess.MemoryUserDAO;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -177,149 +174,129 @@ public class ServerFacadeTests {
         assertThrows(ResponseException.class, () -> serverFacade.logoutUser(request));
     }
 
-//    @Test
-//    @DisplayName("Create Positive")
-//    public void createPositiveTest() throws DataAccessException{
-//        //initialize DAO
-//        authDAO = new MemoryAuthDAO();
-//        userDAO = new MemoryUserDAO();
-//        gameDAO = new MemoryGameDAO();
-//
-//        //add data to DOA
-//        authDAO.create(new AuthData("auth1", "porker"));
-//        gameDAO.create(new GameData(123, "PeterParker", "Batman", "DoodleJump", new ChessGame()));
-//
-//        gameService = new GameService(authDAO, gameDAO);
-//
-//        //create new request
-//        CreateRequest request = new CreateRequest("auth1", "Slither.io");
-//
-//        gameService.create(request);
-//
-//        //find the gamdata size
-//        ArrayList<GameData> games = gameDAO.readAll();
-//        assertEquals(2, games.size());
-//
-//    }
-//
-//    @Test
-//    @DisplayName("Create Negative")
-//    public void createNegativeTest() {
-//        //initialize DAO
-//        authDAO = new MemoryAuthDAO();
-//        userDAO = new MemoryUserDAO();
-//        gameDAO = new MemoryGameDAO();
-//
-//        //add data to DOA
-//        authDAO.create(new AuthData("auth1", "porker"));
-//        gameDAO.create(new GameData(123, "PeterParker", "Batman", "DoodleJump", new ChessGame()));
-//
-//        gameService = new GameService(authDAO, gameDAO);
-//
-//        //create new request
-//        CreateRequest request = new CreateRequest("auth2", "Slither.io"); //invalid Auth
-//
-//        assertThrows(UnauthorizedUserException.class, ()->gameService.create(request));
-//
-//        //find the gameData size
-//        ArrayList<GameData> games = gameDAO.readAll();
-//        assertEquals(1, games.size());
-//    }
-//
-//    @Test
-//    @DisplayName("Join Positive")
-//    public void joinPositiveTest() throws DataAccessException{
-//        //initialize DAO
-//        authDAO = new MemoryAuthDAO();
-//        userDAO = new MemoryUserDAO();
-//        gameDAO = new MemoryGameDAO();
-//
-//        //add data to DOA
-//        authDAO.create(new AuthData("auth1", "Porker"));
-//        gameDAO.create(new GameData(123, "PeterParker",null, "DoodleJump", new ChessGame()));
-//
-//        gameService = new GameService(authDAO, gameDAO);
-//
-//        //create new request
-//        JoinRequest request = new JoinRequest("auth1", ChessGame.TeamColor.BLACK, 123);
-//
-//        gameService.join(request);
-//
-//        //find the gamdata
-//        GameData game = gameDAO.findGame(123);
-//        assertEquals("Porker", game.blackUsername());
-//    }
-//
-//    @Test
-//    @DisplayName("Join Negative")
-//    public void joinNegativeTest() {
-//        //initialize DAO
-//        authDAO = new MemoryAuthDAO();
-//        userDAO = new MemoryUserDAO();
-//        gameDAO = new MemoryGameDAO();
-//
-//        //add data to DOA
-//        authDAO.create(new AuthData("auth1", "porker"));
-//        gameDAO.create(new GameData(123, "PeterParker", "Batman", "DoodleJump", new ChessGame()));
-//
-//        gameService = new GameService(authDAO, gameDAO);
-//
-//        //create new request
-//        JoinRequest request = new JoinRequest("auth1", ChessGame.TeamColor.WHITE, 123);
-//
-//        //JoinResult result = gameService.join(request);
-//
-//        assertThrows(AlreadyTakenException.class, ()->gameService.join(request));
-//    }
-//
-//    @Test
-//    @DisplayName("List Positive")
-//    public void listPositiveTest() throws DataAccessException{
-//        //initialize DAO
-//        authDAO = new MemoryAuthDAO();
-//        userDAO = new MemoryUserDAO();
-//        gameDAO = new MemoryGameDAO();
-//
-//        //add data to DOA
-//        authDAO.create(new AuthData("auth1", "Porker"));
-//        gameDAO.create(new GameData(123, "PeterParker",null, "DoodleJump", new ChessGame()));
-//
-//        gameService = new GameService(authDAO, gameDAO);
-//
-//        //create new request
-//        ListRequest request = new ListRequest("auth1");
-//
-//        ListResult result = gameService.list(request);
-//
-//        //Assert size is 1
-//        assertEquals(1, result.games().size());
-//
-//        gameDAO.create(new GameData(124, "Joker","Nokia", "RegShow", new ChessGame()));
-//        gameDAO.create(new GameData(125, "JigglyPuff","FlynnRider", "Hearts", new ChessGame()));
-//
-//        //After adding make sure size increases
-//        ListResult newResult = gameService.list(request);
-//        assertEquals(3, newResult.games().size());
-//    }
-//
-//    @Test
-//    @DisplayName("List Negative")
-//    public void listNegativeTest() {
-//        //initialize DAO
-//        authDAO = new MemoryAuthDAO();
-//        userDAO = new MemoryUserDAO();
-//        gameDAO = new MemoryGameDAO();
-//
-//        //add data to DOA
-//        authDAO.create(new AuthData("auth1", "porker"));
-//        gameDAO.create(new GameData(123, "PeterParker", "Batman", "DoodleJump", new ChessGame()));
-//
-//        gameService = new GameService(authDAO, gameDAO);
-//
-//        //create new request
-//        ListRequest request = new ListRequest("auth2");
-//
-//        assertThrows(UnauthorizedUserException.class, ()->gameService.list(request));
-//    }
+    @Test
+    @DisplayName("Create Positive")
+    public void createPositiveTest() throws ResponseException{
+        //register and login
+        RegisterRequest requestUser = new RegisterRequest("Piggy", "hotwife1", "mrspiggy@byu.edu");
+        serverFacade.registerUser(requestUser);
+        LoginRequest requestAuth = new LoginRequest("Piggy", "hotwife1");
+        LoginResult resultLogin = serverFacade.loginUser(requestAuth);
+
+        //create new request
+        CreateRequest request = new CreateRequest(resultLogin.authToken(), "Slither.io");
+
+        serverFacade.createGame(request);
+
+        //find the gamdata size
+        ListRequest requestList = new ListRequest(resultLogin.authToken());
+        ListResult gamesAfter = serverFacade.listGames(requestList);
+        assertEquals(1, gamesAfter.games().size());
+
+    }
+
+    @Test
+    @DisplayName("Create Negative")
+    public void createNegativeTest() throws ResponseException{
+        //register and login
+        RegisterRequest requestUser = new RegisterRequest("Piggy", "hotwife1", "mrspiggy@byu.edu");
+        serverFacade.registerUser(requestUser);
+        LoginRequest requestAuth = new LoginRequest("Piggy", "hotwife1");
+        LoginResult resultLogin = serverFacade.loginUser(requestAuth);
+
+        //create new request
+        CreateRequest request = new CreateRequest(resultLogin.authToken(), null);
+        //game name cannot be null
+        assertThrows(ResponseException.class, ()-> serverFacade.createGame(request));
+
+    }
+
+    @Test
+    @DisplayName("Join Positive")
+    public void joinPositiveTest() throws ResponseException{
+        //register and login
+        RegisterRequest requestUser = new RegisterRequest("Piggy", "hotwife1", "mrspiggy@byu.edu");
+        serverFacade.registerUser(requestUser);
+        LoginRequest requestAuth = new LoginRequest("Piggy", "hotwife1");
+        LoginResult resultLogin = serverFacade.loginUser(requestAuth);
+
+        //create new game
+        CreateRequest requestCreate = new CreateRequest(resultLogin.authToken(), "Slither.io");
+        CreateResult createdGame = serverFacade.createGame(requestCreate);
+
+        //create new request
+        JoinRequest request = new JoinRequest(resultLogin.authToken(), ChessGame.TeamColor.BLACK, createdGame.gameID());
+
+        JoinResult result = serverFacade.joinGame(request);
+
+        //assert the result is as expected
+        JoinResult expectedResult = new JoinResult();
+        assertEquals(expectedResult, result);
+    }
+
+    @Test
+    @DisplayName("Join Negative")
+    public void joinNegativeTest() throws ResponseException{
+        //register and login
+        RegisterRequest requestUser = new RegisterRequest("Piggy", "hotwife1", "mrspiggy@byu.edu");
+        serverFacade.registerUser(requestUser);
+        LoginRequest requestAuth = new LoginRequest("Piggy", "hotwife1");
+        LoginResult resultLogin = serverFacade.loginUser(requestAuth);
+
+        //create new game
+        CreateRequest requestCreate = new CreateRequest(resultLogin.authToken(), "Slither.io");
+        CreateResult createdGame = serverFacade.createGame(requestCreate);
+
+        //create new request
+        JoinRequest request = new JoinRequest(resultLogin.authToken(), ChessGame.TeamColor.BLACK, 123);
+
+        //cannot join a game where the ID does not match any
+        assertThrows(ResponseException.class, ()-> serverFacade.joinGame(request));
+    }
+
+    @Test
+    @DisplayName("List Positive")
+    public void listPositiveTest() throws ResponseException{
+        //register and login
+        RegisterRequest requestUser = new RegisterRequest("Piggy", "hotwife1", "mrspiggy@byu.edu");
+        serverFacade.registerUser(requestUser);
+        LoginRequest requestAuth = new LoginRequest("Piggy", "hotwife1");
+        LoginResult resultLogin = serverFacade.loginUser(requestAuth);
+
+        //create new games
+        CreateRequest request = new CreateRequest(resultLogin.authToken(), "Slither.io");
+        serverFacade.createGame(request);
+        request = new CreateRequest(resultLogin.authToken(), "BestGame");
+        serverFacade.createGame(request);
+        request = new CreateRequest(resultLogin.authToken(), "Potato");
+        serverFacade.createGame(request);
+
+        //assert size of list
+        ListRequest requestList = new ListRequest(resultLogin.authToken());
+        ListResult gamesAfter = serverFacade.listGames(requestList);
+        assertEquals(3, gamesAfter.games().size());
+    }
+
+    @Test
+    @DisplayName("List Negative")
+    public void listNegativeTest() throws ResponseException{
+        //register and login
+        RegisterRequest requestUser = new RegisterRequest("Piggy", "hotwife1", "mrspiggy@byu.edu");
+        serverFacade.registerUser(requestUser);
+        LoginRequest requestAuth = new LoginRequest("Piggy", "hotwife1");
+        LoginResult resultLogin = serverFacade.loginUser(requestAuth);
+
+        //create new games
+        CreateRequest request = new CreateRequest(resultLogin.authToken(), "Slither.io");
+        serverFacade.createGame(request);
+        request = new CreateRequest(resultLogin.authToken(), "BestGame");
+        serverFacade.createGame(request);
+        request = new CreateRequest(resultLogin.authToken(), "Potato");
+        serverFacade.createGame(request);
+
+        //unauthorized user
+        ListRequest requestList = new ListRequest("Random_Auth");
+        assertThrows(ResponseException.class, ()-> serverFacade.listGames(requestList));
+    }
 
 }

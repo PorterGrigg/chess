@@ -70,7 +70,7 @@ public class GameService {
         return nextGameID;
     }
 
-    public JoinResult join(JoinRequest request) throws UnauthorizedUserException, AlreadyTakenException, DataAccessException{
+    public JoinResult join(JoinRequest request) throws UnauthorizedUserException, AlreadyTakenException, DataAccessException, BadRequestException{
         String authToken = request.authToken();
         chess.ChessGame.TeamColor playerColor = request.playerColor();
         int gameID = request.gameID();
@@ -84,8 +84,14 @@ public class GameService {
             throw new UnauthorizedUserException("Error: AuthToken Not Found");
         }
 
-        //check that user is not trying to steal another player's color
+
         GameData game = gameDAO.findGame(gameID);
+        //check if the game was found
+        if (game == null){
+            throw new BadRequestException("Error: game not found");
+        }
+
+        //check that user is not trying to steal another player's color
         if ((playerColor == ChessGame.TeamColor.BLACK & game.blackUsername() != null) |
                 (playerColor == ChessGame.TeamColor.WHITE & game.whiteUsername() != null)){
             throw new AlreadyTakenException("Error: already taken");
