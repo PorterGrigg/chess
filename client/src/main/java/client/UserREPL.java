@@ -20,7 +20,8 @@ public class UserREPL {
     private Map<Integer, Integer> gameLookup;
     //private String serverURL;
 
-    public UserREPL(ServerFacade givenServerFacade, String givenUserName, String givenUserAuthToken, String givenPassword, State givenState) throws ResponseException {
+    public UserREPL(ServerFacade givenServerFacade, String givenUserName, String givenUserAuthToken,
+                    String givenPassword, State givenState) throws ResponseException {
         serverFacade = givenServerFacade;
         userAuthToken = givenUserAuthToken;
         userName = givenUserName;
@@ -115,7 +116,7 @@ public class UserREPL {
 
             //change state machine
             state = State.OBSERVEGAME;
-            new GameREPL(serverFacade, userName, userAuthToken, state).run();
+            new GameREPL(serverFacade, userName, userAuthToken, state, gameID).run();
 
             //this will return after the user quits the game
             return  String.format("Feel free to observe another game %s!", userName);
@@ -137,7 +138,7 @@ public class UserREPL {
 
             //change state machine
             state = State.INGAME;
-            new GameREPL(serverFacade, userName, userAuthToken, state).run();
+            new GameREPL(serverFacade, userName, userAuthToken, state, gameID).run();
 
             //this will return after the user quits the game
             return  String.format("Hope you play again soon %s!", userName);

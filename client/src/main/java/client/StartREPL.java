@@ -89,7 +89,7 @@ public class StartREPL {
             userName = result.username();
             userAuthToken = result.authToken();
 
-            return  String.format("You are now signed out.", userName);
+            return  String.format("You are now registered as %s", userName);
         }
         throw new ResponseException(ResponseException.Code.ClientError, "Expected: <yourname>");
     }
@@ -109,7 +109,7 @@ public class StartREPL {
             state = State.LOGGEDIN;
             new UserREPL(serverFacade, userName, userAuthToken, password, state).run();
             //this will return after the user logs out
-            return  String.format("You are logged out %s \n Log in to play", userName);
+            return  String.format("You are logged out %s \nLog in to play!", userName);
         }
         throw new ResponseException(ResponseException.Code.ClientError, "Expected: <yourname>");
     }
