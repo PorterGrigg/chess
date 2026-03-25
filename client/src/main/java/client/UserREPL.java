@@ -116,7 +116,7 @@ public class UserREPL {
 
             //change state machine
             state = State.OBSERVEGAME;
-            new GameREPL(serverFacade, userName, userAuthToken, state, gameID).run();
+            new GameREPL(serverFacade, userName, userAuthToken, state, ChessGame.TeamColor.WHITE, gameID).run();
 
             //this will return after the user quits the game
             return  String.format("Feel free to observe another game %s!", userName);
@@ -138,7 +138,7 @@ public class UserREPL {
 
             //change state machine
             state = State.INGAME;
-            new GameREPL(serverFacade, userName, userAuthToken, state, gameID).run();
+            new GameREPL(serverFacade, userName, userAuthToken, state, translatedPlayerColor, gameID).run();
 
             //this will return after the user quits the game
             return  String.format("Hope you play again soon %s!", userName);

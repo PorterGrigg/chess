@@ -16,14 +16,16 @@ public class GameREPL {
     private String userAuthToken;
     private final ServerFacade serverFacade;
     private State state;
+    private ChessGame.TeamColor userColor;
     private int gameID;
 
     public GameREPL(ServerFacade givenServerFacade, String givenUserName, String givenUserAuthToken,
-                    State givenState, int givenGameID) throws ResponseException {
+                    State givenState, ChessGame.TeamColor givenUserColor, int givenGameID) throws ResponseException {
         serverFacade = givenServerFacade;
         userAuthToken = givenUserAuthToken;
         userName = givenUserName;
         state = givenState;
+        userColor = givenUserColor;
         gameID = givenGameID;
     }
 
@@ -38,7 +40,6 @@ public class GameREPL {
         Scanner scanner = new Scanner(System.in);
         var result = "";
         while (!result.equals("quit")) {
-            printPrompt();
 
             try { //draw the board at the beginning of every loop?
                 drawBoard();
@@ -47,6 +48,7 @@ public class GameREPL {
                 System.out.print(msg);
             }
 
+            printPrompt();
             String line = scanner.nextLine(); //move to the next line and wait for input
 
             try {
@@ -90,7 +92,12 @@ public class GameREPL {
     }
 
     private void drawBoard() throws ResponseException{
-        drawWhiteBoard();
+        if (userColor == ChessGame.TeamColor.WHITE) {
+            drawWhiteBoard();
+        }
+        else{
+            drawBlackBoard();
+        }
     }
 
     private void drawWhiteBoard() throws ResponseException{
@@ -98,11 +105,11 @@ public class GameREPL {
         var board = game.game().getBoard();
 
         System.out.println();
-        // Rows 8 down to 1 (top to bottom)
+        //rows 8 to 1 (top to bottom)
         for (int row = 8; row >= 1; row--) {
-            System.out.print(row + "  "); // Row label
+            System.out.print(row + "  "); //row label
 
-            // Columns 1 to 8 (left to right)
+            //columns 1 to 8 (left to right)
             for (int col = 1; col <= 8; col++) {
 
                 ChessPiece piece = board.getPiece(new chess.ChessPosition(row, col));
@@ -127,6 +134,42 @@ public class GameREPL {
 
         // Column labels
         System.out.println("   a b c d e f g h\n");
+    }
+
+    private void drawBlackBoard() throws ResponseException{
+        GameData game = getGame();
+        var board = game.game().getBoard();
+
+        System.out.println();
+        //rows 1 to 8 (bottom to top)
+        for (int row = 1; row <= 8; row++) {
+            System.out.print(row + "  "); //row label
+
+            //columns 8 to 1 (right to left)
+            for (int col = 8; col >= 1; col--) {
+
+                ChessPiece piece = board.getPiece(new chess.ChessPosition(row, col));
+
+                if (piece == null) {
+                    System.out.print(". ");
+                } else {
+                    char symbol = piece.getPieceType().toString().charAt(0);
+                    // K,Q,R,B,N,P
+
+                    if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+                        symbol = Character.toUpperCase(symbol);
+                    } else {
+                        symbol = Character.toLowerCase(symbol);
+                    }
+
+                    System.out.print(symbol + " ");
+                }
+            }
+            System.out.println();
+        }
+
+        // Column labels
+        System.out.println("   h g f e d c b a\n");
     }
 
     public String help() {
