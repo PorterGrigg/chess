@@ -68,6 +68,7 @@ public class StartREPL {
                 case "register" -> register(params);
                 case "login" -> login(params);
                 case "quit" -> "quit";
+                case "clear" -> clear(params);
                 default -> help();
             };
         } catch (ResponseException ex) {
@@ -113,6 +114,17 @@ public class StartREPL {
         throw new ResponseException(ResponseException.Code.ClientError, "Expected: <yourname>");
     }
 
+    public String clear(String... params) throws ResponseException {
+        if (params.length == 1) { //username and password
+            String password = params[0];
+            if (password.equals("12345")){
+                serverFacade.clearAll();
+                return "The database is cleared";
+            }
+        }
+        throw new ResponseException(ResponseException.Code.ClientError, "Nice Try");
+    }
+
     public String help() {
         return """
                 - register <USERNAME> <PASSWORD> <EMAIL>
@@ -121,15 +133,5 @@ public class StartREPL {
                 """;
     }
 
-    private void assertSignedIn() throws ResponseException {
-        if (state == State.LOGGEDOUT) {
-            throw new ResponseException(ResponseException.Code.ClientError, "You must sign in");
-        }
-    }
-//    public static void main(String[] args) {
-//
-//
-//        var piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
-//        System.out.println("♕ 240 Chess Client: " + piece);
-//    }
+
 }

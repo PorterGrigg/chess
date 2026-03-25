@@ -74,7 +74,7 @@ public class UserREPL {
                 case "create" -> create(params);
                 case "list" -> list(params);
                 case "join" -> join(params);
-                //case "observe" -> observe(params);
+                case "observe" -> observe(params);
                 case "logout" -> logout(params);
                 case "quit" -> "quit";
                 default -> help();
@@ -107,6 +107,22 @@ public class UserREPL {
         throw new ResponseException(ResponseException.Code.ClientError, "Expected: <yourname>");
     }
 
+    public String observe(String... params) throws ResponseException {
+        if (params.length == 1) { //username and password
+            int gameNum = Integer.parseInt(params[0]);
+
+            int gameID = getGameID(gameNum);
+
+            //change state machine
+            state = State.OBSERVEGAME;
+            new GameREPL(serverFacade, userName, userAuthToken, state).run();
+
+            //this will return after the user quits the game
+            return  String.format("Feel free to observe another game %s!", userName);
+        }
+        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <yourname>");
+    }
+
     public String join(String... params) throws ResponseException {
         if (params.length == 2) { //username and password
             int gameNum = Integer.parseInt(params[0]);
@@ -121,7 +137,7 @@ public class UserREPL {
 
             //change state machine
             state = State.INGAME;
-            //new GameREPL(serverFacade, userName, userAuthToken, state).run();
+            new GameREPL(serverFacade, userName, userAuthToken, state).run();
 
             //this will return after the user quits the game
             return  String.format("Hope you play again soon %s!", userName);
