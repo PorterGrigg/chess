@@ -5,6 +5,7 @@ package ui;
  */
 public class EscapeSequences {
 
+    private static final String ESCAPE = "\u001b[";
     private static final String UNICODE_ESCAPE = "\u001b";
     private static final String ANSI_ESCAPE = "\033";
 
@@ -46,6 +47,11 @@ public class EscapeSequences {
     public static final String SET_BG_COLOR_MAGENTA = SET_BG_COLOR + "5m";
     public static final String SET_BG_COLOR_WHITE = SET_BG_COLOR + "15m";
     public static final String RESET_BG_COLOR = UNICODE_ESCAPE + "[49m";
+
+    public static final String GREEN = ESCAPE + "32m";
+    public static final String BLUE = ESCAPE + "34m";
+    public static final String RED = ESCAPE + "31m";
+    public static final String RESET = ESCAPE + "0m";
 
     public static final String WHITE_KING = " ♔ ";
     public static final String WHITE_QUEEN = " ♕ ";

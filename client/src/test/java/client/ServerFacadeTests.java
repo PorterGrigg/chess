@@ -2,33 +2,25 @@ package client;
 
 
 import chess.ChessGame;
-import model.AuthData;
-import model.GameData;
-import model.UserData;
 import org.junit.jupiter.api.*;
 import requests.*;
 import results.*;
 import server.Server;
 import service.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class ServerFacadeTests {
 
     private static Server server;
-    private static int port;
     private static ServerFacade serverFacade;
 
     @BeforeAll
     public static void init() {
+        int port;
         server = new Server();
         port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
@@ -166,7 +158,7 @@ public class ServerFacadeTests {
         RegisterRequest requestUser = new RegisterRequest("Piggy", "hotwife1", "mrspiggy@byu.edu");
         serverFacade.registerUser(requestUser);
         LoginRequest requestAuth = new LoginRequest("Piggy", "hotwife1");
-        LoginResult resultLogin = serverFacade.loginUser(requestAuth);
+        serverFacade.loginUser(requestAuth);
 
         LogoutRequest request = new LogoutRequest("RandoAuth");
 
@@ -245,7 +237,7 @@ public class ServerFacadeTests {
 
         //create new game
         CreateRequest requestCreate = new CreateRequest(resultLogin.authToken(), "Slither.io");
-        CreateResult createdGame = serverFacade.createGame(requestCreate);
+        serverFacade.createGame(requestCreate);
 
         //create new request
         JoinRequest request = new JoinRequest(resultLogin.authToken(), ChessGame.TeamColor.BLACK, 123);
