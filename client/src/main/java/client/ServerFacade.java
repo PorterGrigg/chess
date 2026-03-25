@@ -27,6 +27,12 @@ public class ServerFacade {
         serverUrl = url;
     }
 
+    public ClearResult clearAll() throws ResponseException {
+        var httpRequest = buildRequest("DELETE", "/db", null);
+        var httpResponse = sendRequest(httpRequest);
+        return handleResponse(httpResponse, ClearResult.class);
+    }
+
     public RegisterResult registerUser(RegisterRequest request) throws ResponseException {
         var httpRequest = buildRequest("POST", "/user", request);
         var httpResponse = sendRequest(httpRequest);

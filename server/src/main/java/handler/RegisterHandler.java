@@ -27,7 +27,7 @@ public class RegisterHandler {
         if(request.username() == null | request.password() == null | request.email() == null){
             //throw new BadRequestResponse("Error: bad request");
             ctx.status(400);
-            ctx.result(new Gson().toJson(new ErrorResult("Error: bad request")));
+            ctx.result(new Gson().toJson(new ErrorResult("ClientError", "Error: bad request")));
             return; //needed this to stop the execution of other parts
         }
 
@@ -41,11 +41,11 @@ public class RegisterHandler {
         }
         catch (AlreadyTakenException exception){
             ctx.status(403);
-            ctx.result(new Gson().toJson(new ErrorResult(exception.getMessage())));
+            ctx.result(new Gson().toJson(new ErrorResult("ClientError", exception.getMessage())));
         }
         catch (DataAccessException exception) {
             ctx.status(500);
-            ctx.result(new Gson().toJson(new ErrorResult( exception.getMessage())));
+            ctx.result(new Gson().toJson(new ErrorResult("ServerError", exception.getMessage())));
         }
 
     }

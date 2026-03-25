@@ -32,7 +32,7 @@ public class CreateHandler {
         //throw new BadRequestResponse("Error: bad request");
         if(request.authToken() == null | request.gameName() == null){
             ctx.status(400);
-            ctx.result(new Gson().toJson(new ErrorResult("Error: bad request")));
+            ctx.result(new Gson().toJson(new ErrorResult("ClientError", "Error: bad request")));
             return;
         }
 
@@ -46,10 +46,10 @@ public class CreateHandler {
         }
         catch (UnauthorizedUserException exception){
             ctx.status(401);
-            ctx.result(new Gson().toJson(new ErrorResult( exception.getMessage())));
+            ctx.result(new Gson().toJson(new ErrorResult("ClientError", exception.getMessage())));
         }catch (DataAccessException exception) {
             ctx.status(500);
-            ctx.result(new Gson().toJson(new ErrorResult( exception.getMessage())));
+            ctx.result(new Gson().toJson(new ErrorResult("ServerError", exception.getMessage())));
         }
 
     }
