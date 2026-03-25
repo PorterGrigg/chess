@@ -10,10 +10,7 @@ import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.*;
 import requests.*;
-import results.ListResult;
-import results.LoginResult;
-import results.LogoutResult;
-import results.RegisterResult;
+import results.*;
 import server.Server;
 import service.*;
 
@@ -53,37 +50,43 @@ public class ServerFacadeTests {
 
 
 
-    //    @Test
-//    @DisplayName("Clear Data Positive")
-//    public void clearAllPositiveTest() throws DataAccessException {
-//        //initialize DAO
-//        authDAO = new MemoryAuthDAO();
-//        userDAO = new MemoryUserDAO();
-//        gameDAO = new MemoryGameDAO();
-//
-//        //add data toDOA
-//        authDAO.create(new AuthData("auth1", "porker"));
-//        userDAO.create(new UserData("porker", "password", "porker@byu.edu"));
-//        gameDAO.create(new GameData(10, "porker", "piggy", "game1", null));
-//
-//        clearService = new ClearService(authDAO, userDAO, gameDAO);
-//
-//        //here i want to see if data exists before clearing
-//        List<AuthData> authBefore = authDAO.readAll();
-//        List<UserData> usersBefore = userDAO.readAll();
-//        List<GameData> gamesBefore = gameDAO.readAll();
-//        assertFalse(authBefore.isEmpty());
-//        assertFalse(usersBefore.isEmpty());
-//        assertFalse(gamesBefore.isEmpty());
-//
-//        //service function
-//        clearService.clearAll();
-//
-//        //assert that the service has cleared all the memory
-//        assertTrue(authDAO.readAll().isEmpty());
-//        assertTrue(userDAO.readAll().isEmpty());
-//        assertTrue(gameDAO.readAll().isEmpty());
-//    }
+    @Test
+    @DisplayName("Clear Data Positive")
+    public void clearAllPositiveTest() throws ResponseException {
+
+        //add data to the databases
+
+        RegisterRequest requestUser = new RegisterRequest("Piggy", "hotwife1", "mrspiggy@byu.edu");
+        serverFacade.registerUser(requestUser);
+        LoginRequest requestAuth = new LoginRequest("Piggy", "hotwife1");
+        LoginResult resultLogin = serverFacade.loginUser(requestAuth);
+        CreateRequest requestGame = new CreateRequest(resultLogin.authToken(), "Piggy_Game");
+        serverFacade.createGame(requestGame);
+
+        //check that there is data present
+        ListRequest requestList = new ListRequest(resultLogin.authToken());
+        ListResult gameBefore = serverFacade.listGames(requestList);
+
+        assertEquals(1, gameBefore.games().size());
+
+        //clrea all data
+        serverFacade.clearAll();
+
+        //aerte that there is no maore data
+        assertThrows(ResponseException.class, ()-> serverFacade.listGames(requestList));
+        //will throw exception because AuthToken no longer exists in database
+
+        requestUser = new RegisterRequest("Piggy", "hotwife1", "mrspiggy@byu.edu");
+        serverFacade.registerUser(requestUser);
+        requestAuth = new LoginRequest("Piggy", "hotwife1");
+        resultLogin = serverFacade.loginUser(requestAuth);
+
+        //check that there is no game data present
+        ListRequest requestListAgain = new ListRequest(resultLogin.authToken());
+        ListResult gamesAfter = serverFacade.listGames(requestListAgain);
+
+        assertEquals(0, gamesAfter.games().size());
+    }
 
     @Test
     @DisplayName("RegisterUser Positive")
@@ -109,7 +112,20 @@ public class ServerFacadeTests {
         assertThrows(ResponseException.class, () -> serverFacade.registerUser(request));
 
     }
-//
+
+    @Test
+    @DisplayName("Login Positive")
+    public void loginPositiveTest() throws ResponseException{
+
+        RegisterRequest requestUser = new RegisterRequest("Piggy", "hotwife1", "mrspiggy@byu.edu");
+        serverFacade.registerUser(requestUser);
+        LoginRequest requestAuth = new LoginRequest("Piggy", "hotwife1");
+        LoginResult resultLogin = serverFacade.loginUser(requestAuth);
+
+        assertNotNull(resultLogin.authToken());
+
+    }
+
 //
 //    @Test
 //    @DisplayName("Login Negative")
@@ -135,31 +151,6 @@ public class ServerFacadeTests {
 //        assertThrows(UnauthorizedUserException.class, () -> userService.login(request));
 //    }
 //
-//    @Test
-//    @DisplayName("Login Positive")
-//    public void loginPositiveTest() throws DataAccessException{
-//        //initialize DAO
-//        authDAO = new MemoryAuthDAO();
-//        userDAO = new MemoryUserDAO();
-//        gameDAO = new MemoryGameDAO();
-//
-//        userService = new UserService(authDAO, userDAO);
-//
-//        //add data toDOA
-//        authDAO.create(new AuthData("auth1", "porker"));
-//        userDAO.create(new UserData("Kermit", userService.createPasswordHash("password"), "porker@byu.edu"));
-//
-//        userService = new UserService(authDAO, userDAO);
-//
-//        //create new login request
-//        LoginRequest request = new LoginRequest("Kermit", "password");
-//
-//        LoginResult result = userService.login(request);
-//
-//        //assert authToken generted
-//        assertNotNull(result.authToken());
-//
-//    }
 //
 //    @Test
 //    @DisplayName("Logout Positive")

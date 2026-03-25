@@ -11,14 +11,6 @@ import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
 
-//.delete("/db", clearHandler::handle)
-//            .post("/user", registerHandler::handle)
-//            .post("/session", loginHandler::handle)
-//            .delete("/session", logoutHandler::handle)
-//            .get("/game", listHandler::handle)
-//            .post("/game", createHandler::handle)
-//            .put("/game", joinHandler::handle);
-
 public class ServerFacade {
     private final HttpClient client = HttpClient.newHttpClient();
     private final String serverUrl;
@@ -28,51 +20,56 @@ public class ServerFacade {
     }
 
     public ClearResult clearAll() throws ResponseException {
-        var httpRequest = buildRequest("DELETE", "/db", null);
+        var httpRequest = buildRequest("DELETE", "/db", null, null);
         var httpResponse = sendRequest(httpRequest);
         return handleResponse(httpResponse, ClearResult.class);
     }
 
     public RegisterResult registerUser(RegisterRequest request) throws ResponseException {
-        var httpRequest = buildRequest("POST", "/user", request);
+        var httpRequest = buildRequest("POST", "/user", request, null);
         var httpResponse = sendRequest(httpRequest);
         return handleResponse(httpResponse, RegisterResult.class);
     }
 
     public LoginResult loginUser(LoginRequest request) throws ResponseException {
-        var httpRequest = buildRequest("POST", "/session", request);
+        var httpRequest = buildRequest("POST", "/session", request, null);
         var httpResponse = sendRequest(httpRequest);
         return handleResponse(httpResponse, LoginResult.class);
     }
 
     public LogoutResult logoutUser(LogoutRequest request) throws ResponseException {
-        var httpRequest = buildRequest("DELETE", "/user", request);
+        var httpRequest = buildRequest("DELETE", "/user", request, request.authToken());
         var httpResponse = sendRequest(httpRequest);
         return handleResponse(httpResponse, LogoutResult.class);
     }
 
     public ListResult listGames(ListRequest request) throws ResponseException {
-        var httpRequest = buildRequest("GET", "/game", request);
+        var httpRequest = buildRequest("GET", "/game", request, request.authToken());
         var httpResponse = sendRequest(httpRequest);
         return handleResponse(httpResponse, ListResult.class);
     }
 
     public CreateResult createGame(CreateRequest request) throws ResponseException {
-        var httpRequest = buildRequest("POST", "/game", request);
+        var httpRequest = buildRequest("POST", "/game", request, request.authToken());
         var httpResponse = sendRequest(httpRequest);
         return handleResponse(httpResponse, CreateResult.class);
     }
 
     public JoinResult joinGame(CreateRequest request) throws ResponseException {
-        var httpRequest = buildRequest("PUT", "/game", request);
+        var httpRequest = buildRequest("PUT", "/game", request, request.authToken());
         var httpResponse = sendRequest(httpRequest);
         return handleResponse(httpResponse, JoinResult.class);
     }
 
-    private HttpRequest buildRequest(String method, String path, Object body) {
+    private HttpRequest buildRequest(String method, String path, Object body, String authToken) {
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + path))
                 .method(method, makeRequestBody(body));
+
+        if (authToken != null) { //check if there is an authtoken included in the request
+            request.setHeader("Authorization", authToken);
+        }
+
         if (body != null) {
             request.setHeader("Content-Type", "application/json");
         }
