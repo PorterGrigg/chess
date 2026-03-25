@@ -126,80 +126,57 @@ public class ServerFacadeTests {
 
     }
 
-//
-//    @Test
-//    @DisplayName("Login Negative")
-//    public void loginNegativeTest() {
-//        //initialize DAO
-//        authDAO = new MemoryAuthDAO();
-//        userDAO = new MemoryUserDAO();
-//        gameDAO = new MemoryGameDAO();
-//
-//        userService = new UserService(authDAO, userDAO);
-//
-//        //add data toDOA
-//        authDAO.create(new AuthData("auth1", "porker"));
-//        userDAO.create(new UserData("Kermit", userService.createPasswordHash("password"), "porker@byu.edu"));
-//
-//
-//
-//        //create new login request
-//        //create new login request
-//        LoginRequest request = new LoginRequest("Kermit", "pass");
-//
-//        //assert throws error
-//        assertThrows(UnauthorizedUserException.class, () -> userService.login(request));
-//    }
-//
-//
-//    @Test
-//    @DisplayName("Logout Positive")
-//    public void logoutPositiveTest() throws DataAccessException{
-//        //initialize DAO
-//        authDAO = new MemoryAuthDAO();
-//        userDAO = new MemoryUserDAO();
-//        gameDAO = new MemoryGameDAO();
-//
-//        userService = new UserService(authDAO, userDAO);
-//
-//        //add data toDOA
-//        authDAO.create(new AuthData("auth1", "porker"));
-//        userDAO.create(new UserData("Kermit", userService.createPasswordHash("password"), "porker@byu.edu"));
-//
-//        //create new request
-//        LogoutRequest request = new LogoutRequest("auth1");
-//
-//        LogoutResult result = userService.logout(request);
-//
-//        //assert result is given
-//        LogoutResult expectedResult = new LogoutResult();
-//        assertEquals(expectedResult, result);
-//        //assertTrue(expectedResult.equals(result));
-//
-//    }
-//
-//    @Test
-//    @DisplayName("Logout Negative")
-//    public void logoutNegativeTest() {
-//        //initialize DAO
-//        authDAO = new MemoryAuthDAO();
-//        userDAO = new MemoryUserDAO();
-//        gameDAO = new MemoryGameDAO();
-//
-//        //add data toDOA
-//        authDAO.create(new AuthData("auth1", "porker"));
-//        userDAO.create(new UserData("Kermit", "password", "porker@byu.edu"));
-//
-//        userService = new UserService(authDAO, userDAO);
-//
-//
-//        //create new request
-//        LogoutRequest request = new LogoutRequest("auth2");
-//
-//        //assert throws error
-//        assertThrows(UnauthorizedUserException.class, () -> userService.logout(request));
-//    }
-//
+
+    @Test
+    @DisplayName("Login Negative")
+    public void loginNegativeTest() throws ResponseException{
+
+        RegisterRequest requestUser = new RegisterRequest("Piggy", "hotwife1", "mrspiggy@byu.edu");
+        serverFacade.registerUser(requestUser);
+
+
+        LoginRequest request = new LoginRequest("Kermit", "hotwife1");
+
+        //assert throws error
+        assertThrows(ResponseException.class, () -> serverFacade.loginUser(request));
+    }
+
+
+    @Test
+    @DisplayName("Logout Positive")
+    public void logoutPositiveTest() throws ResponseException{
+
+        //register and login
+        RegisterRequest requestUser = new RegisterRequest("Piggy", "hotwife1", "mrspiggy@byu.edu");
+        serverFacade.registerUser(requestUser);
+        LoginRequest requestAuth = new LoginRequest("Piggy", "hotwife1");
+        LoginResult resultLogin = serverFacade.loginUser(requestAuth);
+
+        LogoutRequest request = new LogoutRequest(resultLogin.authToken());
+        LogoutResult result = serverFacade.logoutUser(request);
+
+        //assert result is given
+        LogoutResult expectedResult = new LogoutResult();
+        assertEquals(expectedResult, result);
+
+
+    }
+
+    @Test
+    @DisplayName("Logout Negative")
+    public void logoutNegativeTest() throws ResponseException{
+        //register and login
+        RegisterRequest requestUser = new RegisterRequest("Piggy", "hotwife1", "mrspiggy@byu.edu");
+        serverFacade.registerUser(requestUser);
+        LoginRequest requestAuth = new LoginRequest("Piggy", "hotwife1");
+        LoginResult resultLogin = serverFacade.loginUser(requestAuth);
+
+        LogoutRequest request = new LogoutRequest("RandoAuth");
+
+        //assert throws error
+        assertThrows(ResponseException.class, () -> serverFacade.logoutUser(request));
+    }
+
 //    @Test
 //    @DisplayName("Create Positive")
 //    public void createPositiveTest() throws DataAccessException{

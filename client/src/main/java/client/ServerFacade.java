@@ -38,8 +38,9 @@ public class ServerFacade {
     }
 
     public LogoutResult logoutUser(LogoutRequest request) throws ResponseException {
-        var httpRequest = buildRequest("DELETE", "/user", request, request.authToken());
+        var httpRequest = buildRequest("DELETE", "/session", request, request.authToken());
         var httpResponse = sendRequest(httpRequest);
+
         return handleResponse(httpResponse, LogoutResult.class);
     }
 

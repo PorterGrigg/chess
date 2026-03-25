@@ -21,8 +21,8 @@ public class CreateHandler {
 
     public void handle(Context ctx) {
 
-        System.out.println("RAW JSON BODY: " + ctx.body());
-        System.out.println("AUTH HEADER: " + ctx.header("Authorization"));
+//        System.out.println("RAW JSON BODY: " + ctx.body());
+//        System.out.println("AUTH HEADER: " + ctx.header("Authorization"));
 
         //convert json form to our request form
         String authToken = ctx.header("Authorization");
