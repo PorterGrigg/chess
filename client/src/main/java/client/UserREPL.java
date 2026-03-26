@@ -54,16 +54,6 @@ public class UserREPL {
         System.out.println();
     }
 
-//
-//    public void notify(Notification notification) {
-//        System.out.println(RED + notification.message());
-//        printPrompt();
-//    }
-
-    private void printPrompt() { //this is what is printed before start listening for user input
-        System.out.print("\n" + RESET + ">>> " + GREEN);
-    }
-
 
     public String eval(String input) {
         try {
@@ -226,6 +216,10 @@ public class UserREPL {
             throw new ResponseException(ResponseException.Code.ClientError, "Error: invalid color");
         }
         return playerColor;
+    }
+
+    private void printPrompt() { //this is what is printed before start listening for user input
+        System.out.print("\n" + RESET + ">>> " + GREEN);
     }
 
 }

@@ -148,8 +148,8 @@ public class GameREPL {
     public String help() {
         return """
                 - quit
-                - refresh (not implemented)
                 """;
+        //- refresh (not implemented)
     }
 
     private GameData getGame() throws ResponseException{
