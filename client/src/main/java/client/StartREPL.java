@@ -79,10 +79,14 @@ public class StartREPL {
             RegisterRequest request = new RegisterRequest(username, password, email);
             RegisterResult result = serverFacade.registerUser(request);
 
+            String.format("You are now registered as %s", userName);
             userName = result.username();
             userAuthToken = result.authToken();
 
-            return  String.format("You are now registered as %s", userName);
+            String[] loginParams = new String[] { params[0], params[1] };
+
+            //the register function should automatically go to login
+            return login(loginParams);
         }
         throw new ResponseException(ResponseException.Code.ClientError, "Expected: <username> <password> <email>");
     }

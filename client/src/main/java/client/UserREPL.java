@@ -100,7 +100,12 @@ public class UserREPL {
 
     public String observe(String... params) throws ResponseException {
         if (params.length == 1) { //username and password
-            int gameNum = Integer.parseInt(params[0]);
+            int gameNum = 0;
+            try {
+                gameNum = Integer.parseInt(params[0]);
+            }catch(Exception e){
+                throw new ResponseException(ResponseException.Code.ClientError, "Expected: <number>");
+            }
 
             int gameID = getGameID(gameNum);
 
@@ -117,7 +122,14 @@ public class UserREPL {
 
     public String join(String... params) throws ResponseException {
         if (params.length == 2) { //username and password
-            int gameNum = Integer.parseInt(params[0]);
+            int gameNum =0;
+
+            try {
+                gameNum = Integer.parseInt(params[0]);
+            }catch(Exception e){
+                throw new ResponseException(ResponseException.Code.ClientError, "Expected: <number>");
+            }
+
             String playerColor = params[1];
 
             int gameID = getGameID(gameNum);

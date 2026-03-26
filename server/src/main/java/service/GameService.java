@@ -94,7 +94,7 @@ public class GameService {
         //check that user is not trying to steal another player's color
         if ((playerColor == ChessGame.TeamColor.BLACK & game.blackUsername() != null) |
                 (playerColor == ChessGame.TeamColor.WHITE & game.whiteUsername() != null)){
-            throw new AlreadyTakenException("Error: already taken");
+            throw new AlreadyTakenException("Error: color already taken");
         }
 
         //update game
