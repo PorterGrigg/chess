@@ -47,6 +47,8 @@ public class EscapeSequences {
     public static final String SET_BG_COLOR_MAGENTA = SET_BG_COLOR + "5m";
     public static final String SET_BG_COLOR_WHITE = SET_BG_COLOR + "15m";
     public static final String RESET_BG_COLOR = UNICODE_ESCAPE + "[49m";
+    public static final String SET_BG_COLOR_LIGHT_BROWN = SET_BG_COLOR + "180m"; // light brown
+    public static final String SET_BG_COLOR_DARK_BROWN = SET_BG_COLOR + "94m";  // dark brown
 
     public static final String GREEN = ESCAPE + "32m";
     public static final String BLUE = ESCAPE + "34m";
@@ -65,7 +67,11 @@ public class EscapeSequences {
     public static final String BLACK_KNIGHT = " ♞ ";
     public static final String BLACK_ROOK = " ♜ ";
     public static final String BLACK_PAWN = " ♟ ";
-    public static final String EMPTY = " \u2003 ";
+    // "   \u200A\u2006" small by more than a quarter "   \u200A\u200A\u200A" too small by almost a quarter
+    // "   \u200A to skinny by almost a space"\u2003\u2003\u2009" // too wide by a bit"\u2003\u2003\u2002" way too wide
+    // "\u2003\u2003\u200A\u200A" too wide by a bit "\u2003\u2003\u200A" too skinny by just a tiny bit
+    // "  " + "\u2003";// too wide by a bit //"\u2003\u2003" too skinny by a bit; //" \u2003 "; too wide by a bit
+    public static final String EMPTY = "   \u200A\u2006\u200A"; //perfect!!
 
     public static String moveCursorToLocation(int x, int y) { return UNICODE_ESCAPE + "[" + y + ";" + x + "H"; }
 }

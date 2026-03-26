@@ -1,14 +1,19 @@
 package client;
 
+import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPiece;
 import model.*;
 import requests.*;
 import results.*;
+import ui.EscapeSequences;
 
 import java.util.*;
 
+import static chess.ChessPiece.PieceType.*;
 import static ui.EscapeSequences.*;
+import static ui.EscapeSequences.BLACK_PAWN;
+import static ui.EscapeSequences.BLACK_ROOK;
 
 public class GameREPL {
 
@@ -107,33 +112,17 @@ public class GameREPL {
         System.out.println();
         //rows 8 to 1 (top to bottom)
         for (int row = 8; row >= 1; row--) {
-            System.out.print(row + "  "); //row label
+            System.out.print(SET_TEXT_COLOR_BLUE + row + "  " + RESET_TEXT_COLOR); //row label
 
             //columns 1 to 8 (left to right)
             for (int col = 1; col <= 8; col++) {
+                printSquare(board, row, col);
 
-                ChessPiece piece = board.getPiece(new chess.ChessPosition(row, col));
-
-                if (piece == null) {
-                    System.out.print(". ");
-                } else {
-                    char symbol = piece.getPieceType().toString().charAt(0);
-                    // K,Q,R,B,N,P
-
-                    if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-                        symbol = Character.toUpperCase(symbol);
-                    } else {
-                        symbol = Character.toLowerCase(symbol);
-                    }
-
-                    System.out.print(symbol + " ");
-                }
             }
             System.out.println();
         }
-
         // Column labels
-        System.out.println("   a b c d e f g h\n");
+        System.out.println(SET_TEXT_COLOR_BLUE + "    A   B   C  D   E   F  G   H\n" + RESET_TEXT_COLOR);
     }
 
     private void drawBlackBoard() throws ResponseException{
@@ -143,33 +132,17 @@ public class GameREPL {
         System.out.println();
         //rows 1 to 8 (bottom to top)
         for (int row = 1; row <= 8; row++) {
-            System.out.print(row + "  "); //row label
+            System.out.print(SET_TEXT_COLOR_BLUE + row + "  " + RESET_TEXT_COLOR); //row label
 
             //columns 8 to 1 (right to left)
             for (int col = 8; col >= 1; col--) {
-
-                ChessPiece piece = board.getPiece(new chess.ChessPosition(row, col));
-
-                if (piece == null) {
-                    System.out.print(". ");
-                } else {
-                    char symbol = piece.getPieceType().toString().charAt(0);
-                    // K,Q,R,B,N,P
-
-                    if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-                        symbol = Character.toUpperCase(symbol);
-                    } else {
-                        symbol = Character.toLowerCase(symbol);
-                    }
-
-                    System.out.print(symbol + " ");
-                }
+                printSquare(board, row, col);
             }
             System.out.println();
         }
 
         // Column labels
-        System.out.println("   h g f e d c b a\n");
+        System.out.println(SET_TEXT_COLOR_BLUE + "    H   G   F  E   D   C  B   A\n" + RESET_TEXT_COLOR);
     }
 
     public String help() {
@@ -193,5 +166,67 @@ public class GameREPL {
             }
         }
         throw new ResponseException(ResponseException.Code.ServerError, "Error: could not locate current game");
+    }
+
+    private void printSquare(ChessBoard board, int row, int col){
+        ChessPiece piece = board.getPiece(new chess.ChessPosition(row, col));
+
+        String pieceSymbol;
+        String squareColor;
+        String textColor = SET_TEXT_COLOR_MAGENTA;
+
+        if ((row+col) %2 ==0 ){
+            squareColor = SET_BG_COLOR_DARK_BROWN;
+        }
+        else{
+            squareColor = SET_BG_COLOR_LIGHT_BROWN;
+        }
+
+        if (piece == null) {
+            textColor = squareColor;
+            pieceSymbol = EMPTY;
+        } else {
+            ChessPiece.PieceType pieceType = piece.getPieceType();
+
+            if (piece.getTeamColor() == ChessGame.TeamColor.WHITE){
+                textColor = SET_TEXT_COLOR_WHITE;
+                switch(pieceType){
+                    case KING: pieceSymbol = WHITE_KING;
+                        break;
+                    case QUEEN: pieceSymbol = WHITE_QUEEN;
+                        break;
+                    case BISHOP: pieceSymbol = WHITE_BISHOP;
+                        break;
+                    case KNIGHT: pieceSymbol = WHITE_KNIGHT;
+                        break;
+                    case ROOK: pieceSymbol = WHITE_ROOK;
+                        break;
+                    case PAWN: pieceSymbol = WHITE_PAWN;
+                        break;
+                    default: pieceSymbol = EMPTY;
+                }
+            }
+            else{
+                textColor = SET_TEXT_COLOR_BLACK;
+                switch(pieceType){
+                    case KING: pieceSymbol = BLACK_KING;
+                        break;
+                    case QUEEN: pieceSymbol = BLACK_QUEEN;
+                        break;
+                    case BISHOP: pieceSymbol = BLACK_BISHOP;
+                        break;
+                    case KNIGHT: pieceSymbol = BLACK_KNIGHT;
+                        break;
+                    case ROOK: pieceSymbol = BLACK_ROOK;
+                        break;
+                    case PAWN: pieceSymbol = BLACK_PAWN;
+                        break;
+                    default: pieceSymbol = EMPTY;
+                }
+
+            }
+        }
+        System.out.print(squareColor + textColor + pieceSymbol + EscapeSequences.RESET_BG_COLOR);
+        //System
     }
 }
