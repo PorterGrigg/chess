@@ -10,19 +10,19 @@ import ui.EscapeSequences;
 
 import java.util.*;
 
-import static chess.ChessPiece.PieceType.*;
+
 import static ui.EscapeSequences.*;
 import static ui.EscapeSequences.BLACK_PAWN;
 import static ui.EscapeSequences.BLACK_ROOK;
 
 public class GameREPL {
 
-    private String userName;
-    private String userAuthToken;
+    private final String userName;
+    private final String userAuthToken;
     private final ServerFacade serverFacade;
-    private State state;
-    private ChessGame.TeamColor userColor;
-    private int gameID;
+    private final State state;
+    private final ChessGame.TeamColor userColor;
+    private final int gameID;
 
     public GameREPL(ServerFacade givenServerFacade, String givenUserName, String givenUserAuthToken,
                     State givenState, ChessGame.TeamColor givenUserColor, int givenGameID) throws ResponseException {
@@ -173,7 +173,7 @@ public class GameREPL {
 
         String pieceSymbol;
         String squareColor;
-        String textColor = SET_TEXT_COLOR_MAGENTA;
+        String textColor;
 
         if ((row+col) %2 ==0 ){
             squareColor = SET_BG_COLOR_DARK_BROWN;
@@ -190,40 +190,24 @@ public class GameREPL {
 
             if (piece.getTeamColor() == ChessGame.TeamColor.WHITE){
                 textColor = SET_TEXT_COLOR_WHITE;
-                switch(pieceType){
-                    case KING: pieceSymbol = WHITE_KING;
-                        break;
-                    case QUEEN: pieceSymbol = WHITE_QUEEN;
-                        break;
-                    case BISHOP: pieceSymbol = WHITE_BISHOP;
-                        break;
-                    case KNIGHT: pieceSymbol = WHITE_KNIGHT;
-                        break;
-                    case ROOK: pieceSymbol = WHITE_ROOK;
-                        break;
-                    case PAWN: pieceSymbol = WHITE_PAWN;
-                        break;
-                    default: pieceSymbol = EMPTY;
-                }
             }
-            else{
+            else {
                 textColor = SET_TEXT_COLOR_BLACK;
-                switch(pieceType){
-                    case KING: pieceSymbol = BLACK_KING;
-                        break;
-                    case QUEEN: pieceSymbol = BLACK_QUEEN;
-                        break;
-                    case BISHOP: pieceSymbol = BLACK_BISHOP;
-                        break;
-                    case KNIGHT: pieceSymbol = BLACK_KNIGHT;
-                        break;
-                    case ROOK: pieceSymbol = BLACK_ROOK;
-                        break;
-                    case PAWN: pieceSymbol = BLACK_PAWN;
-                        break;
-                    default: pieceSymbol = EMPTY;
-                }
-
+            }
+            switch(pieceType){
+                case KING: pieceSymbol = BLACK_KING;
+                    break;
+                case QUEEN: pieceSymbol = BLACK_QUEEN;
+                    break;
+                case BISHOP: pieceSymbol = BLACK_BISHOP;
+                    break;
+                case KNIGHT: pieceSymbol = BLACK_KNIGHT;
+                    break;
+                case ROOK: pieceSymbol = BLACK_ROOK;
+                    break;
+                case PAWN: pieceSymbol = BLACK_PAWN;
+                    break;
+                default: pieceSymbol = EMPTY;
             }
         }
         System.out.print(squareColor + textColor + pieceSymbol + EscapeSequences.RESET_BG_COLOR);

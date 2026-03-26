@@ -1,7 +1,7 @@
 package client;
 
 import chess.ChessGame;
-import chess.ChessPiece;
+
 import model.*;
 import requests.*;
 import results.*;
@@ -12,12 +12,12 @@ import static ui.EscapeSequences.*;
 
 public class UserREPL {
 
-    private String userName;
-    private String userAuthToken;
-    private String userPassword;
+    private final String userName;
+    private final String userAuthToken;
+    private final String userPassword;
     private final ServerFacade serverFacade;
     private State state;
-    private Map<Integer, Integer> gameLookup;
+    private final Map<Integer, Integer> gameLookup;
     //private String serverURL;
 
     public UserREPL(ServerFacade givenServerFacade, String givenUserName, String givenUserAuthToken,
@@ -100,7 +100,7 @@ public class UserREPL {
             String gameName = params[0];
 
             CreateRequest request = new CreateRequest(userAuthToken, gameName);
-            CreateResult result = serverFacade.createGame(request);
+            serverFacade.createGame(request);
 
             //this will return after the user logs out
             return  String.format("Your game \"%s!\" has been created!", gameName);
@@ -119,9 +119,10 @@ public class UserREPL {
             new GameREPL(serverFacade, userName, userAuthToken, state, ChessGame.TeamColor.WHITE, gameID).run();
 
             //this will return after the user quits the game
+            state = State.LOGGEDIN;
             return  String.format("Feel free to observe another game %s!", userName);
         }
-        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <yourname>");
+        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <gameNumber>");
     }
 
     public String join(String... params) throws ResponseException {
@@ -134,16 +135,17 @@ public class UserREPL {
             ChessGame.TeamColor translatedPlayerColor = getPlayerColor(playerColor);
 
             JoinRequest request = new JoinRequest(userAuthToken, translatedPlayerColor, gameID);
-            JoinResult result = serverFacade.joinGame(request);
+            serverFacade.joinGame(request);
 
             //change state machine
             state = State.INGAME;
             new GameREPL(serverFacade, userName, userAuthToken, state, translatedPlayerColor, gameID).run();
 
             //this will return after the user quits the game
+            state = State.LOGGEDIN;
             return  String.format("Hope you play again soon %s!", userName);
         }
-        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <yourname>");
+        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <gameNumber> <color>");
     }
 
     public String list(String... params) throws ResponseException {
@@ -201,7 +203,7 @@ public class UserREPL {
     }
 
     private int getGameID(int gameNum) throws ResponseException{
-        int gameID = 0;
+        int gameID;
         if (gameLookup.containsKey(gameNum)){
             gameID = gameLookup.get(gameNum);
         }
@@ -226,9 +228,4 @@ public class UserREPL {
         return playerColor;
     }
 
-//    private String getGameListString(ArrayList<GameData> games){
-//        //displays the games in a numbered list, including the game name and players (not observers) in the game.
-//
-//        for ()
-//    }
 }

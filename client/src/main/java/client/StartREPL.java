@@ -1,7 +1,5 @@
 package client;
 
-import chess.ChessGame;
-import chess.ChessPiece;
 import requests.*;
 import results.*;
 
@@ -91,7 +89,7 @@ public class StartREPL {
 
             return  String.format("You are now registered as %s", userName);
         }
-        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <yourname>");
+        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <username> <password> <email>");
     }
 
     public String login(String... params) throws ResponseException {
@@ -109,9 +107,10 @@ public class StartREPL {
             state = State.LOGGEDIN;
             new UserREPL(serverFacade, userName, userAuthToken, password, state).run();
             //this will return after the user logs out
+            state = State.LOGGEDOUT;
             return  String.format("You are logged out %s \nLog in to play!", userName);
         }
-        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <yourname>");
+        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <username> <password>");
     }
 
     public String clear(String... params) throws ResponseException {
