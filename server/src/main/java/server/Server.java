@@ -5,6 +5,7 @@ import handler.*;
 import service.*;
 
 import io.javalin.*;
+import websocket.WebSocketHandler;
 
 import static io.javalin.apibuilder.ApiBuilder.post;
 
@@ -17,6 +18,7 @@ public class Server {
     private final UserService userService;
     private final GameService gameService;
 
+    private final WebSocketHandler webSocketHandler;
     private final ClearHandler clearHandler;
     private final RegisterHandler registerHandler;
     private final LoginHandler loginHandler;
@@ -50,6 +52,7 @@ public class Server {
         this.gameService = new GameService(authDAO, gameDAO);
 
         //initialize the handlers
+        this.webSocketHandler = new WebSocketHandler();
         this.clearHandler = new ClearHandler(clearService);
         this.registerHandler = new RegisterHandler(userService);
         this.loginHandler = new LoginHandler(userService);
@@ -67,7 +70,12 @@ public class Server {
             .delete("/session", logoutHandler::handle)
             .get("/game", listHandler::handle)
             .post("/game", createHandler::handle)
-            .put("/game", joinHandler::handle);
+            .put("/game", joinHandler::handle)
+            .ws("/ws", ws -> {
+            ws.onConnect(webSocketHandler);
+            ws.onMessage(webSocketHandler);
+            ws.onClose(webSocketHandler);
+        });
 
     }
 
