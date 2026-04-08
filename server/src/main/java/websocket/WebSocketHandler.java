@@ -1,6 +1,8 @@
 package websocket;
 
+import chess.ChessGame;
 import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
@@ -80,9 +82,33 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void makeMove(String authToken, int gameID, ChessMove move, Session session) throws IOException {
+        ChessGame game = null;
+        try {
+            game = webSocketService.getGame(gameID);
+        } catch(DataAccessException exception){
+            exception.printStackTrace();
+            var userErrorMessage = new ErrorMessage("Error: could not access data");
+            connections.broadcastUser(session, userErrorMessage); //send error to
+        }
 
-        if(!webSocketService.validMove()){
+        //makeMove method in ChessGame validates its moves
+        try{
+            game.makeMove(move);
+        }catch (InvalidMoveException exception){
+            var userErrorMessage = new ErrorMessage(exception.getMessage());
+            connections.broadcastUser(session, userErrorMessage);
+        }
 
+        //update game in database
+        webSocketService.updateGame(gameID, game);
+
+
+        if(webSocketService.validMove(game, move)){
+
+        }
+        else{
+            var userErrorMessage = new ErrorMessage("Error: invlaid move!");
+            connections.broadcastUser(session, userErrorMessage); //send error to user
         }
 
         try {
@@ -115,7 +141,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private LoadGameMessage getUserLoadGameMessage(String authToken, int gameID) throws BadRequestException, DataAccessException{
-        GameData game = webSocketService.getGame(gameID);
+        GameData game = webSocketService.getGameData(gameID);
         return new LoadGameMessage(game);
     }
 
@@ -137,7 +163,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private boolean usernameIsInGame(String username, int gameID) throws DataAccessException {
-        GameData game = webSocketService.getGame(gameID);
+        GameData game = webSocketService.getGameData(gameID);
         String blackUser = game.blackUsername();
         String whiteUser = game.whiteUsername();
         if (username.equals(blackUser) || username.equals(whiteUser)){
@@ -149,7 +175,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private String getPlayerColor(String username, int gameID) throws DataAccessException {
-        GameData game = webSocketService.getGame(gameID);
+        GameData game = webSocketService.getGameData(gameID);
         String blackUser = game.blackUsername();
         String whiteUser = game.whiteUsername();
         if (username.equals(blackUser)){

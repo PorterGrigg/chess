@@ -1,14 +1,18 @@
 package service;
 
 import chess.ChessGame;
+import com.google.gson.Gson;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
+import dataaccess.DatabaseManager;
 import dataaccess.GameDAO;
 import model.AuthData;
 import model.GameData;
 import requests.*;
 import results.*;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 
 
@@ -99,7 +103,7 @@ public class GameService {
 
         //update game
         String username = authorization.username();
-        gameDAO.updateGame(gameID, playerColor, username);
+        gameDAO.updateGameDataUsername(gameID, playerColor, username);
 
         //create and return result
         return new JoinResult();

@@ -1,5 +1,7 @@
 package websocket;
 
+import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
@@ -50,7 +52,7 @@ public class WebSocketService {
         return userAuth.username();
     }
 
-    public GameData getGame(int gameID) throws BadRequestException, DataAccessException{
+    public GameData getGameData(int gameID) throws BadRequestException, DataAccessException{
         GameData game = gameDAO.findGame(gameID);
         //check if the game was found
         if (game == null){
@@ -59,7 +61,16 @@ public class WebSocketService {
         return game;
     }
 
-    public boolean validateMove(){
+    public ChessGame getGame(int gameID) throws BadRequestException, DataAccessException{
+        GameData gameData = gameDAO.findGame(gameID);
+        //check if the game was found
+        if (gameData == null){
+            throw new BadRequestException("Error: game not found");
+        }
+        return gameData.game();
+    }
+
+    public void updateGame(int gameID, ChessGame updatedGame){
 
     }
 }

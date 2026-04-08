@@ -24,7 +24,7 @@ public class MemoryGameDAO extends BaseMemoryDAO<GameData> implements GameDAO{
     }
 
     @Override
-    public void updateGame(int gameID, ChessGame.TeamColor playerColor, String username){
+    public void updateGameDataUsername(int gameID, ChessGame.TeamColor playerColor, String username){
 
         for (int i = 0; i < generalStorage.size(); i++) {
 
@@ -55,6 +55,26 @@ public class MemoryGameDAO extends BaseMemoryDAO<GameData> implements GameDAO{
 
                 break; //break loop cause already updated the game
 
+            }
+        }
+    }
+
+    public void updateGameData(int gameID, String whiteUsername, String blackUsername, String gameName, ChessGame game)
+            throws DataAccessException{
+        for (int i = 0; i < generalStorage.size(); i++) {
+
+            if (generalStorage.get(i).gameID() == gameID) {
+                //because records are immutable their fields cannot be updated
+
+                //delete old game data
+                generalStorage.remove(i);
+
+                //create new GameData from old and new info combined
+                GameData newGData = new GameData(gameID, whiteUsername, blackUsername, gameName, game);
+                //add new game data to storage
+                generalStorage.add(newGData);
+
+                break;
             }
         }
     }

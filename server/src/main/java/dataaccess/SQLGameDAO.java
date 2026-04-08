@@ -43,7 +43,7 @@ public class SQLGameDAO extends BaseSQLDAO implements GameDAO {
     }
 
     @Override
-    public void updateGame(int gameID, ChessGame.TeamColor playerColor, String username) throws DataAccessException {
+    public void updateGameDataUsername(int gameID, ChessGame.TeamColor playerColor, String username) throws DataAccessException {
 
         GameData currGame = findGame(gameID);
 
@@ -65,10 +65,17 @@ public class SQLGameDAO extends BaseSQLDAO implements GameDAO {
             whiteUsername = username;
         }
 
-        //convert game to json
-        String jsonGame = new Gson().toJson(currGame.game());
-
         String gameName = currGame.gameName();
+        ChessGame game = currGame.game();
+
+        updateGameData(gameID, whiteUsername, blackUsername, gameName, game);
+    }
+
+    @Override
+    public void updateGameData(int gameID, String whiteUsername, String blackUsername, String gameName, ChessGame game) throws DataAccessException {
+
+        //convert game to json
+        String jsonGame = new Gson().toJson(game);
 
         try (Connection conn = DatabaseManager.getConnection()) {
             var statement = "UPDATE GameData " +
@@ -84,7 +91,7 @@ public class SQLGameDAO extends BaseSQLDAO implements GameDAO {
                 ps.executeUpdate();
             }
         } catch (Exception e) {
-            throw new DataAccessException("Error: unable to read data");
+            throw new DataAccessException("Error: unable to update data");
         }
     }
 
