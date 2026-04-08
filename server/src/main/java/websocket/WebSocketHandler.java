@@ -1,5 +1,6 @@
 package websocket;
 
+import chess.ChessMove;
 import com.google.gson.Gson;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
@@ -7,13 +8,17 @@ import dataaccess.GameDAO;
 import io.javalin.websocket.*;
 import model.AuthData;
 import model.GameData;
+import service.BadRequestException;
 import service.GameService;
 import service.UnauthorizedUserException;
 import service.UserService;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import org.eclipse.jetty.websocket.api.Session;
+import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 
@@ -58,41 +63,104 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
             connections.add(session);
 
-            var userMessage = webSocketService.getUserLoadGameMessage(authToken, gameID);
+            var userMessage = getUserLoadGameMessage(authToken, gameID);
             connections.broadcastUser(session, userMessage); //send board update to new player
 
-            var message = String.format("%s has joined as ", username);
-            var notification = new Notification(Notification.Type.ARRIVAL, message);
+            var notification = getConnectNotifiction(authToken, gameID);
             connections.broadcastGame(session, notification); //send notificaiton that a user has entered to all participants
-        }catch(UnauthorizedUserException exception){
-            var errorMessage = String.format("%s is in the shop", visitorName);
-            var notification = new Notification(Notification.Type.ARRIVAL, message);
-            connections.notify(); //send board update to new player
-        }catch(DataAccessException exception){
 
+        }catch(UnauthorizedUserException exception){
+            var userErrorMessage = new ErrorMessage("Error: unauthorized user");
+            connections.broadcastUser(session, userErrorMessage); //send error to user
+        }catch(DataAccessException exception){
+            exception.printStackTrace();
+            var userErrorMessage = new ErrorMessage("Error: could not access data");
+            connections.broadcastUser(session, userErrorMessage); //send error to
         }
     }
 
-    private void exit(String visitorName, Session session) throws IOException {
-        var message = String.format("%s left the shop", visitorName);
-        var notification = new Notification(Notification.Type.DEPARTURE, message);
-        connections.broadcast(session, notification);
-        connections.remove(session);
-    }
+    private void makeMove(String authToken, int gameID, ChessMove move, Session session) throws IOException {
 
-    public void makeNoise(String petName, String sound) throws ResponseException {
+        if(!webSocketService.validMove()){
+
+        }
+
         try {
-            var message = String.format("%s says %s", petName, sound);
-            var notification = new Notification(Notification.Type.NOISE, message);
-            connections.broadcast(null, notification);
-        } catch (Exception ex) {
-            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
+
+
+            webSocketService.authorizeUser(authToken);
+            String username = webSocketService.getUsername(authToken);
+
+            connections.add(session);
+
+            var userMessage = getUserLoadGameMessage(authToken, gameID);
+            connections.broadcastUser(session, userMessage); //send board update to new player
+
+            var notification = getConnectNotifiction(authToken, gameID);
+            connections.broadcastGame(session, notification); //send notificaiton that a user has entered to all participants
+
+        }catch(UnauthorizedUserException exception){
+            var userErrorMessage = new ErrorMessage("Error: unauthorized user");
+            connections.broadcastUser(session, userErrorMessage); //send error to user
+        }catch(DataAccessException exception){
+            exception.printStackTrace();
+            var userErrorMessage = new ErrorMessage("Error: could not access data");
+            connections.broadcastUser(session, userErrorMessage); //send error to
         }
     }
 
     @Override
     public void handleClose(WsCloseContext ctx) {
         System.out.println("Websocket closed");
+    }
+
+    private LoadGameMessage getUserLoadGameMessage(String authToken, int gameID) throws BadRequestException, DataAccessException{
+        GameData game = webSocketService.getGame(gameID);
+        return new LoadGameMessage(game);
+    }
+
+    private NotificationMessage getConnectNotifiction(String authToken, int gameID) throws DataAccessException {
+        String username = webSocketService.getUsername(authToken);
+        NotificationMessage notification = null;
+
+        if (usernameIsInGame(username, gameID)){
+            String playerColor = getPlayerColor(username, gameID);
+            var message = String.format("%s has joined as %s", username, playerColor);
+            notification = new NotificationMessage(message); //don't need to specify the type because it is supered
+        }
+        else{
+            var message = String.format("%s is observing the game", username);
+            notification = new NotificationMessage(message);
+        }
+        return notification;
+
+    }
+
+    private boolean usernameIsInGame(String username, int gameID) throws DataAccessException {
+        GameData game = webSocketService.getGame(gameID);
+        String blackUser = game.blackUsername();
+        String whiteUser = game.whiteUsername();
+        if (username.equals(blackUser) || username.equals(whiteUser)){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    private String getPlayerColor(String username, int gameID) throws DataAccessException {
+        GameData game = webSocketService.getGame(gameID);
+        String blackUser = game.blackUsername();
+        String whiteUser = game.whiteUsername();
+        if (username.equals(blackUser)){
+            return "Black";
+        }
+        else if ((username.equals(whiteUser))){
+            return "White";
+        }
+        else{
+            return "Invalid Color";
+        }
     }
 
 }

@@ -50,21 +50,16 @@ public class WebSocketService {
         return userAuth.username();
     }
 
-    public LoadGameMessage getUserLoadGameMessage(String authToken, int gameID) throws BadRequestException, DataAccessException{
-
-        GameData game = getGame(gameID);
-        return new LoadGameMessage(game);
-    }
-
-
-    public NotificationMessage getBroadcastNotificationMessage
-
-    private GameData getGame(int gameID) throws BadRequestException, DataAccessException{
+    public GameData getGame(int gameID) throws BadRequestException, DataAccessException{
         GameData game = gameDAO.findGame(gameID);
         //check if the game was found
         if (game == null){
             throw new BadRequestException("Error: game not found");
         }
         return game;
+    }
+
+    public boolean validateMove(){
+
     }
 }
