@@ -2,6 +2,7 @@ package websocket;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
@@ -70,7 +71,13 @@ public class WebSocketService {
         return gameData.game();
     }
 
-    public void updateGame(int gameID, ChessGame updatedGame){
+    public void updateGame(int gameID, ChessMove move) throws DataAccessException, InvalidMoveException {
+        GameData beforeData = getGameData(gameID);
+        ChessGame game = getGame(gameID);
 
+        game.makeMove(move);
+
+        //update in database
+        gameDAO.updateGameData(gameID, beforeData.whiteUsername(), beforeData.blackUsername(), beforeData.gameName(), game);
     }
 }

@@ -49,8 +49,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                     MakeMoveCommand moveCommand = new Gson().fromJson(ctx.message(), MakeMoveCommand.class);
                     makeMove(moveCommand.getAuthToken(), moveCommand.getGameID(), moveCommand.getMove(), ctx.session);
                 }
-                case LEAVE -> leave(command.getAuthToken(), command.getGameID(), ctx.session);
-                case RESIGN-> resign(command.getAuthToken(), command.getGameID(), ctx.session);
+                //case LEAVE -> leave(command.getAuthToken(), command.getGameID(), ctx.session);
+                //case RESIGN-> resign(command.getAuthToken(), command.getGameID(), ctx.session);
             }
 
         } catch (IOException ex) {
@@ -91,48 +91,52 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             connections.broadcastUser(session, userErrorMessage); //send error to
         }
 
+        //update game in database
         //makeMove method in ChessGame validates its moves
         try{
-            game.makeMove(move);
+            webSocketService.updateGame(gameID, move);
         }catch (InvalidMoveException exception){
             var userErrorMessage = new ErrorMessage(exception.getMessage());
             connections.broadcastUser(session, userErrorMessage);
+        }catch (DataAccessException ex){
+            ex.printStackTrace();
+            var userErrorMessage = new ErrorMessage(ex.getMessage());
+            connections.broadcastUser(session, userErrorMessage); //send error
         }
 
-        //update game in database
-        webSocketService.updateGame(gameID, game);
-
-
-        if(webSocketService.validMove(game, move)){
-
-        }
-        else{
-            var userErrorMessage = new ErrorMessage("Error: invlaid move!");
-            connections.broadcastUser(session, userErrorMessage); //send error to user
-        }
-
-        try {
-
-
-            webSocketService.authorizeUser(authToken);
-            String username = webSocketService.getUsername(authToken);
-
-            connections.add(session);
-
-            var userMessage = getUserLoadGameMessage(authToken, gameID);
-            connections.broadcastUser(session, userMessage); //send board update to new player
-
-            var notification = getConnectNotifiction(authToken, gameID);
-            connections.broadcastGame(session, notification); //send notificaiton that a user has entered to all participants
-
-        }catch(UnauthorizedUserException exception){
-            var userErrorMessage = new ErrorMessage("Error: unauthorized user");
-            connections.broadcastUser(session, userErrorMessage); //send error to user
-        }catch(DataAccessException exception){
-            exception.printStackTrace();
-            var userErrorMessage = new ErrorMessage("Error: could not access data");
-            connections.broadcastUser(session, userErrorMessage); //send error to
-        }
+        //send load game message to all clients
+//        var userMessage = getUserLoadGameMessage(authToken, gameID);
+//        connections.broadcastUser(session, userMessage); //send board update to new player
+//
+//        var notification = getConnectNotifiction(authToken, gameID);
+//        connections.broadcastGame(session, notification); //send notificaiton that a user has entered to all participants
+//
+//
+//
+//
+//
+//        try {
+//
+//
+//            webSocketService.authorizeUser(authToken);
+//            String username = webSocketService.getUsername(authToken);
+//
+//            connections.add(session);
+//
+//            var userMessage = getUserLoadGameMessage(authToken, gameID);
+//            connections.broadcastUser(session, userMessage); //send board update to new player
+//
+//            var notification = getConnectNotifiction(authToken, gameID);
+//            connections.broadcastGame(session, notification); //send notificaiton that a user has entered to all participants
+//
+//        }catch(UnauthorizedUserException exception){
+//            var userErrorMessage = new ErrorMessage("Error: unauthorized user");
+//            connections.broadcastUser(session, userErrorMessage); //send error to user
+//        }catch(DataAccessException exception){
+//            exception.printStackTrace();
+//            var userErrorMessage = new ErrorMessage("Error: could not access data");
+//            connections.broadcastUser(session, userErrorMessage); //send error to
+//        }
     }
 
     @Override
