@@ -6,6 +6,7 @@ import service.*;
 
 import io.javalin.*;
 import websocket.WebSocketHandler;
+import websocket.WebSocketService;
 
 import static io.javalin.apibuilder.ApiBuilder.post;
 
@@ -14,6 +15,8 @@ public class Server {
 
     private final Javalin httpHandler;
 
+
+    private final WebSocketService webSocketService;
     private final ClearService clearService;
     private final UserService userService;
     private final GameService gameService;
@@ -47,12 +50,13 @@ public class Server {
         //initialize the DAOs (which are SQL database access here)
 
         //initialize the services
+        this.webSocketService = new WebSocketService(authDAO, userDAO, gameDAO);
         this.clearService = new ClearService(authDAO, userDAO, gameDAO);
         this.userService = new UserService(authDAO, userDAO);
         this.gameService = new GameService(authDAO, gameDAO);
 
         //initialize the handlers
-        this.webSocketHandler = new WebSocketHandler();
+        this.webSocketHandler = new WebSocketHandler(webSocketService);
         this.clearHandler = new ClearHandler(clearService);
         this.registerHandler = new RegisterHandler(userService);
         this.loginHandler = new LoginHandler(userService);

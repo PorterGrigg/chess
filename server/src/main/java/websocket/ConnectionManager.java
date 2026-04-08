@@ -18,7 +18,7 @@ public class ConnectionManager {
         connections.remove(session);
     }
 
-    public void broadcast(Session excludeSession, Notification notification) throws IOException {
+    public void broadcastGame(Session excludeSession, ServerMessage notification) throws IOException {
         String msg = notification.toString();
         for (Session c : connections.values()) {
             if (c.isOpen()) {
@@ -27,5 +27,11 @@ public class ConnectionManager {
                 }
             }
         }
+    }
+
+
+    public void broadcastUser(Session userSession, ServerMessage message) throws IOException {
+        String msg = message.toString();
+        userSession.getRemote().sendString(msg);
     }
 }

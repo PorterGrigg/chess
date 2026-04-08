@@ -99,6 +99,4 @@ public class UserService {
     public boolean verifyPassword(String clearTextPassword, String hashedPassword){
         return BCrypt.checkpw(clearTextPassword, hashedPassword);
     }
-
-
 }

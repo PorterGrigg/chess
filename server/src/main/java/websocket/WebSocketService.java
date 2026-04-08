@@ -4,9 +4,12 @@ import com.google.gson.Gson;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
+import dataaccess.UserDAO;
 import io.javalin.websocket.*;
 import model.AuthData;
 import model.GameData;
+import model.UserData;
+import service.BadRequestException;
 import service.GameService;
 import service.UnauthorizedUserException;
 import service.UserService;
@@ -17,39 +20,18 @@ import websocket.messages.LoadGameMessage;
 
 import java.io.IOException;
 
-public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
+public class WebSocketService {
 
-    private final ConnectionManager connections = new ConnectionManager();
-    private final WebSocketService webSocketService;
+    private final UserDAO userDAO;
+    private final GameDAO gameDAO;
+    private final AuthDAO authDAO;
 
-    public WebSocketHandler(WebSocketService webSocketService) {
-        this.webSocketService = webSocketService;
+    public WebSocketService(AuthDAO authDAO, UserDAO userDAO, GameDAO gameDAO) {
+        this.userDAO = userDAO;
+        this.gameDAO = gameDAO;
+        this.authDAO = authDAO;
     }
 
-    @Override
-    public void handleConnect(WsConnectContext ctx) {
-        System.out.println("Websocket connected");
-        ctx.enableAutomaticPings();
-    }
-
-    @Override
-    public void handleMessage(WsMessageContext ctx) {
-        try {
-            UserGameCommand command = new Gson().fromJson(ctx.message(), UserGameCommand.class);
-            switch (command.getCommandType()) {
-                case CONNECT -> connect(command.getAuthToken(), command.getGameID(), ctx.session);
-                case MAKE_MOVE-> { //make move has a seperate field that we need to extract
-                    MakeMoveCommand moveCommand = new Gson().fromJson(ctx.message(), MakeMoveCommand.class);
-                    makeMove(moveCommand.getAuthToken(), moveCommand.getGameID(), moveCommand.getMove(), ctx.session);
-                }
-                case LEAVE -> leave(command.getAuthToken(), command.getGameID(), ctx.session);
-                case RESIGN-> resign(command.getAuthToken(), command.getGameID(), ctx.session);
-            }
-
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
 
     private void connect(String authToken, int gameID, Session session) throws IOException {
         try {
@@ -91,9 +73,21 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
 
-    @Override
-    public void handleClose(WsCloseContext ctx) {
-        System.out.println("Websocket closed");
+    private void authorizeUser(String authToken) throws DataAccessException, UnauthorizedUserException{
+        AuthData authorization = authDAO.findAuth(authToken);
+        //if username does not exist then throw error
+
+        if(authorization == null){
+            throw new UnauthorizedUserException("Error: Unauthorized");
+        }
     }
 
+    public GameData getGame(int gameID) throws BadRequestException, DataAccessException{
+        GameData game = gameDAO.findGame(gameID);
+        //check if the game was found
+        if (game == null){
+            throw new BadRequestException("Error: game not found");
+        }
+        return game;
+    }
 }
