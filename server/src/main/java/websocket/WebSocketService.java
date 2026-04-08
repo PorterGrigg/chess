@@ -56,6 +56,7 @@ public class WebSocketService {
         return new LoadGameMessage(game);
     }
 
+
     public NotificationMessage getBroadcastNotificationMessage
 
     private GameData getGame(int gameID) throws BadRequestException, DataAccessException{
