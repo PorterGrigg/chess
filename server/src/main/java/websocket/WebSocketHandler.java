@@ -53,16 +53,15 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private void connect(String authToken, int gameID, Session session) throws IOException {
         try {
-            AuthData userAuthData = authorizeUser(authToken);
-            String username = userAuthData.username();
+            webSocketService.authorizeUser(authToken);
+            String username = webSocketService.getUsername(authToken);
 
             connections.add(session);
 
-            GameData game = gameService.getGame(gameID);
-            var userMessage = new LoadGameMessage(game);
+            var userMessage = webSocketService.getUserLoadGameMessage(authToken, gameID);
             connections.broadcastUser(session, userMessage); //send board update to new player
 
-            var message = String.format("%s is in the shop", visitorName);
+            var message = String.format("%s has joined as ", username);
             var notification = new Notification(Notification.Type.ARRIVAL, message);
             connections.broadcastGame(session, notification); //send notificaiton that a user has entered to all participants
         }catch(UnauthorizedUserException exception){
