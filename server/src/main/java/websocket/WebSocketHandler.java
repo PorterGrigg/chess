@@ -63,7 +63,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             webSocketService.authorizeUser(authToken);
             String username = webSocketService.getUsername(authToken);
 
-            connections.add(session);
+            connections.add(gameID, session);
 
             var userMessage = getUserLoadGameMessage(authToken, gameID);
             connections.broadcastUser(session, userMessage); //send board update to new player
