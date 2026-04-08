@@ -312,7 +312,7 @@ public class DataAccessTests {
 
         int gameID = gameDAO.create(new GameData(123, null, "porker", "theGame", new ChessGame()));
 
-        gameDAO.updateGame(gameID, ChessGame.TeamColor.WHITE, "YoMama");
+        gameDAO.updateGameDataUsername(gameID, ChessGame.TeamColor.WHITE, "YoMama");
 
         GameData foundGame = gameDAO.findGame(gameID);
 
@@ -325,7 +325,7 @@ public class DataAccessTests {
 
         int gameID = gameDAO.create(new GameData(123, null, "porker", "theGame", new ChessGame()));
 
-        assertThrows(DataAccessException.class, ()->gameDAO.updateGame(gameID, ChessGame.TeamColor.BLACK, "YoMama"));
+        assertThrows(DataAccessException.class, ()->gameDAO.updateGameDataUsername(gameID, ChessGame.TeamColor.BLACK, "YoMama"));
     }
 
     @Test

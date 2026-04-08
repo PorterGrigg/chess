@@ -189,7 +189,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             return "White";
         }
         else{
-            return "Invalid Color";
+            return "Error: Invalid Color";
         }
     }
 

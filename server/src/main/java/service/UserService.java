@@ -30,7 +30,7 @@ public class UserService {
 
         //if username does exist then throw error
         if(user != null){
-            throw new AlreadyTakenException("");
+            throw new AlreadyTakenException("Error: username already taken");
         }
 
         //else:add the user to user data

@@ -162,18 +162,18 @@ public class ChessGame {
 
         //check if there is even a piece if not throw an exception
         if(pieceToMove == null){
-            throw new InvalidMoveException("No piece at start position");
+            throw new InvalidMoveException("Error: No piece at start position");
         }
 
         //check that the piece to move is the color of the team who's turn it is
         if(pieceToMove.getTeamColor() != this.teamTurn){
-            throw new InvalidMoveException("Move is out of turn");
+            throw new InvalidMoveException("Error: Move is out of turn");
         }
 
         //check the move against valid moves and if not on the list then throw exception
         Collection<ChessMove> validMoves = validMoves(startPosition);
         if(!validMoves.contains(move)){
-            throw new InvalidMoveException("Not a valid move");
+            throw new InvalidMoveException("Error: Not a valid move");
         }
 
         //if it makes it through all the exceptions then it is a valid move and you can make that move
