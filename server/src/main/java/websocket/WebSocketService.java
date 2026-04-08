@@ -80,4 +80,8 @@ public class WebSocketService {
         //update in database
         gameDAO.updateGameData(gameID, beforeData.whiteUsername(), beforeData.blackUsername(), beforeData.gameName(), game);
     }
+
+    public void validateGameID(int gameID) throws DataAccessException {
+        getGameData(gameID);
+    }
 }

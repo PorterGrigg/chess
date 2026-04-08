@@ -62,6 +62,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         try {
             webSocketService.authorizeUser(authToken);
             String username = webSocketService.getUsername(authToken);
+            webSocketService.validateGameID(gameID); //will throw error if ID not found
 
             connections.add(gameID, session);
 
@@ -69,15 +70,11 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             connections.broadcastUser(session, userMessage); //send board update to new player
 
             var notification = getConnectNotifiction(authToken, gameID);
-            connections.broadcastGame(session, notification); //send notificaiton that a user has entered to all participants
+            connections.broadcastGame(gameID, session, notification); //send notificaiton that a user has entered to all participants
 
-        }catch(UnauthorizedUserException exception){
-            var userErrorMessage = new ErrorMessage("Error: unauthorized user");
-            connections.broadcastUser(session, userErrorMessage); //send error to user
-        }catch(DataAccessException exception){
-            exception.printStackTrace();
-            var userErrorMessage = new ErrorMessage("Error: could not access data");
-            connections.broadcastUser(session, userErrorMessage); //send error to
+        }catch(UnauthorizedUserException  | DataAccessException |BadRequestException exception){
+            var userErrorMessage = new ErrorMessage(exception.getMessage());
+            connections.broadcastUser(session, userErrorMessage);
         }
     }
 
@@ -87,7 +84,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             game = webSocketService.getGame(gameID);
         } catch(DataAccessException exception){
             exception.printStackTrace();
-            var userErrorMessage = new ErrorMessage("Error: could not access data");
+            var userErrorMessage = new ErrorMessage(exception.getMessage());
             connections.broadcastUser(session, userErrorMessage); //send error to
         }
 
