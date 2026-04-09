@@ -10,6 +10,7 @@ import model.*;
 import requests.*;
 import results.*;
 import ui.EscapeSequences;
+import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
 import java.util.*;
@@ -25,7 +26,7 @@ public class GameREPL {
     private final String userAuthToken;
     private final ServerFacade serverFacade;
     private final WebSocketFacade webSocketFacade;
-    private final State state;
+    private State state;
     private final ChessGame.TeamColor userColor;
     private final int gameID;
 
@@ -48,22 +49,33 @@ public class GameREPL {
         }
         System.out.print(help());
 
+        //connect the user to the game
+        try {
+            connectUser();
+        }catch(ResponseException ex){
+            var msg = ex.toString();
+            System.out.print(msg);
+        }
+
+        try { //draw the board at the beginning of entering game
+            drawBoard();
+        } catch (Throwable e) {
+            var msg = e.toString();
+            System.out.print(msg);
+        }
+
         Scanner scanner = new Scanner(System.in);
         var result = "";
         while (!result.equals("quit")) {
-
-            try { //draw the board at the beginning of every loop?
-                drawBoard();
-            } catch (Throwable e) {
-                var msg = e.toString();
-                System.out.print(msg);
-            }
 
             printPrompt();
             String line = scanner.nextLine(); //move to the next line and wait for input
 
             try {
                 result = eval(line);
+                if ((state != State.INGAME) & (state != State.OBSERVEGAME)){
+                    break; //stop the loop if they stop the game
+                }
                 System.out.print(BLUE + result);
             } catch (Throwable e) {
                 var msg = e.toString();
@@ -86,7 +98,8 @@ public class GameREPL {
 
             return switch (cmd) { //will return whatever comes out of the function that is called
                 case "redraw" -> redrawBoard(params);
-//                case "leave" -> leaveGame(params);
+                case "refresh" -> redrawBoard(params);
+                case "leave" -> leaveGame(params);
 //                case "move" -> makeMove(params);
 //                case "resign" -> resignGame(params);
 //                case "highlight" -> highlightLegalMoves(params);
@@ -113,11 +126,30 @@ public class GameREPL {
         if (params.length == 0) { //username and password
             drawBoard();
         }
-        throw new ResponseException(ResponseException.Code.ClientError, "Expected: nothing");
+        else{
+            throw new ResponseException(ResponseException.Code.ClientError, "Expected: nothing");
+        }
+        return "Here is the updated board!";
     }
 
+    public String leaveGame(String... params) throws ResponseException {
+        if (params.length == 0) { //username and password
 
+            //make leave command
+            UserGameCommand leaveCommand = new UserGameCommand(UserGameCommand.CommandType.LEAVE,
+                    userAuthToken, gameID);
 
+            //send through facade
+            webSocketFacade.sendUserCommand(leaveCommand);
+
+            //change state machine
+            state = State.LOGGEDIN; //change to state for UserREPL
+
+            //return from the call in the loop
+            return  String.format("You shouldn't see this message from leave game %s!", userName);
+        }
+        throw new ResponseException(ResponseException.Code.ClientError, "Expected: nothing");
+    }
 
 
     private void drawBoard() throws ResponseException{
@@ -229,5 +261,11 @@ public class GameREPL {
         }
         System.out.print(squareColor + textColor + pieceSymbol + EscapeSequences.RESET_BG_COLOR);
         //System
+    }
+
+    private void connectUser() throws ResponseException {
+        UserGameCommand connectCommand = new UserGameCommand(UserGameCommand.CommandType.CONNECT,
+                userAuthToken, gameID);
+        webSocketFacade.sendUserCommand(connectCommand);
     }
 }

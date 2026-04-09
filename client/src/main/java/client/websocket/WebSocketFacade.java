@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import client.ResponseException;
 
 import jakarta.websocket.*;
+import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
@@ -43,13 +44,18 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-//    public void enterPetShop(String visitorName) throws ResponseException {
-//        try {
-//            var action = new Action(Action.Type.ENTER, visitorName);
-//            this.session.getBasicRemote().sendText(new Gson().toJson(action));
-//        } catch (IOException ex) {
-//            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
-//        }
-//    }
+    public void sendUserCommand(UserGameCommand userCommand) throws ResponseException {
+        if (!session.isOpen()) {
+            throw new ResponseException(ResponseException.Code.ServerError, "WebSocket not open");
+        }
+
+        try {
+            String json = new Gson().toJson(userCommand);
+//            System.out.println(json);
+            this.session.getBasicRemote().sendText(json);
+        } catch (IOException ex) {
+            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
+        }
+    }
 
 }
