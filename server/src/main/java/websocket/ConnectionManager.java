@@ -35,6 +35,10 @@ public class ConnectionManager {
         }
     }
 
+    public void removeAll(int gameID) {
+        connections.remove(gameID);
+    }
+
     public void broadcastGame(int gameID, Session excludeSession, ServerMessage notification) throws IOException {
         String jsonNotification = new Gson().toJson(notification);
         Set<Session> sessions = connections.get(gameID);
