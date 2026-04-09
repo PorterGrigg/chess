@@ -43,6 +43,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     @Override
     public void handleMessage(WsMessageContext ctx) {
         try {
+            System.out.println("Handling Message");
             UserGameCommand command = new Gson().fromJson(ctx.message(), UserGameCommand.class);
             switch (command.getCommandType()) {
                 case CONNECT -> connect(command.getAuthToken(), command.getGameID(), ctx.session);
@@ -81,6 +82,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private void makeMove(String authToken, int gameID, ChessMove move, Session session) throws IOException {
         ChessGame game = null;
+        System.out.println("Making Move");
         try {
             webSocketService.authorizeUser(authToken);
 

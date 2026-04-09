@@ -1,8 +1,6 @@
 package client;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
+import chess.*;
 import client.websocket.ServerMessageHandler;
 import client.websocket.ServerToClientMessageHandler;
 import client.websocket.WebSocketFacade;
@@ -10,6 +8,7 @@ import model.*;
 import requests.*;
 import results.*;
 import ui.EscapeSequences;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
@@ -31,14 +30,14 @@ public class GameREPL {
     private final int gameID;
 
     public GameREPL(ServerFacade givenServerFacade, String givenUserName, String givenUserAuthToken,
-                    State givenState, ChessGame.TeamColor givenUserColor, int givenGameID) throws ResponseException {
+                    State givenState, ChessGame.TeamColor givenUserColor, int givenGameID) throws Exception {
         serverFacade = givenServerFacade;
         userAuthToken = givenUserAuthToken;
         userName = givenUserName;
         state = givenState;
         userColor = givenUserColor;
         gameID = givenGameID;
-        webSocketFacade = new WebSocketFacade(givenServerFacade.getServerUrl(), new ServerToClientMessageHandler());
+        webSocketFacade = new WebSocketFacade(givenServerFacade.getServerUrl(), new ServerToClientMessageHandler(this));
     }
 
     public void run() {
@@ -85,7 +84,7 @@ public class GameREPL {
         System.out.println();
     }
 
-    private void printPrompt() { //this is what is printed before start listening for user input
+    public void printPrompt() { //this is what is printed before start listening for user input
         System.out.print("\n" + RESET + ">>> " + GREEN);
     }
 
@@ -100,7 +99,7 @@ public class GameREPL {
                 case "redraw" -> redrawBoard(params);
                 case "refresh" -> redrawBoard(params);
                 case "leave" -> leaveGame(params);
-//                case "move" -> makeMove(params);
+                case "move" -> makeMove(params);
 //                case "resign" -> resignGame(params);
 //                case "highlight" -> highlightLegalMoves(params);
 //                case "quit" -> leaveGame(params);
@@ -115,7 +114,7 @@ public class GameREPL {
         return """
                 - redraw - redraw/refresh the board
                 - leave - leave the game
-                - move - make a move
+                - move <START POSITION (ex: B1)> <END POSITION> <PROMOTION PIECE (If Applicable)>- make a move
                 - resign - raise the white flag honorably and with dignity
                 - highlight - highlight legal moves
                 """;
@@ -150,6 +149,49 @@ public class GameREPL {
         }
         throw new ResponseException(ResponseException.Code.ClientError, "Expected: nothing");
     }
+
+    public String makeMove(String... params) throws ResponseException {
+        if (params.length == 2) { //start and end
+            //save params
+            ChessPosition startPos = getPosition(params[0]);
+            ChessPosition endPos = getPosition(params[1]);
+
+            //create chess move
+            ChessMove newMove = new ChessMove(startPos, endPos, null);
+
+            //make leave command
+            UserGameCommand moveCommand = new MakeMoveCommand(userAuthToken, gameID, newMove);
+
+            //send through facade
+            webSocketFacade.sendUserCommand(moveCommand);
+
+            //return from the call in the loop
+            return  "Good move!";
+        }
+        else if (params.length == 3) { //given promotion also
+            //save params
+            ChessPosition startPos = getPosition(params[0]);
+            ChessPosition endPos = getPosition(params[1]);
+            ChessPiece.PieceType promotion = getPromotionPiece(params[2]);
+
+            //create chess move
+            ChessMove newMove = new ChessMove(startPos, endPos, promotion);
+
+            //make leave command
+            UserGameCommand moveCommand = new MakeMoveCommand(userAuthToken, gameID, newMove);
+
+            //send through facade
+            webSocketFacade.sendUserCommand(moveCommand);
+
+            //return from the call in the loop
+            return  "Good move!";
+        }
+
+        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <START POSITION> <END POSITION> <PROMOTION PIECE (If Applicable)>");
+    }
+
+
+
 
 
     private void drawBoard() throws ResponseException{
@@ -264,8 +306,52 @@ public class GameREPL {
     }
 
     private void connectUser() throws ResponseException {
+        //System.out.println("Connecting User");
         UserGameCommand connectCommand = new UserGameCommand(UserGameCommand.CommandType.CONNECT,
                 userAuthToken, gameID);
         webSocketFacade.sendUserCommand(connectCommand);
+    }
+
+    private ChessPosition getPosition(String strPos){
+
+        //extract row and column
+        char colChar = strPos.charAt(0);
+        char rowChar = strPos.charAt(1);
+
+        //convert string to ints
+        String colStr = String.valueOf(colChar);
+        int col = convertCol(colStr);
+        int row = Character.getNumericValue(rowChar);
+
+        ChessPosition position = new ChessPosition(row, col);
+
+        return position;
+    }
+
+    private int convertCol(String colStr){
+        int col=0;
+        switch(colStr){
+            case "a" -> col= 1;
+            case "b" -> col= 2;
+            case "c" -> col= 3;
+            case "d" -> col= 4;
+            case "e" -> col= 5;
+            case "f" -> col= 6;
+            case "g" -> col= 7;
+            case "h" -> col= 8;
+        }
+        return col;
+    }
+
+    private ChessPiece.PieceType getPromotionPiece(String promotionStr){
+        ChessPiece.PieceType promotion = ChessPiece.PieceType.PAWN;
+        promotionStr = promotionStr.toLowerCase();
+        switch(promotionStr){
+            case "queen" -> promotion = ChessPiece.PieceType.QUEEN;
+            case "bishop" -> promotion = ChessPiece.PieceType.BISHOP;
+            case "rook" -> promotion = ChessPiece.PieceType.ROOK;
+            case "knight" -> promotion = ChessPiece.PieceType.KNIGHT;
+        }
+        return promotion;
     }
 }

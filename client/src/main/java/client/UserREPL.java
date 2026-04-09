@@ -70,7 +70,7 @@ public class UserREPL {
                 case "quit" -> "quit";
                 default -> help();
             };
-        } catch (ResponseException ex) {
+        } catch (Exception ex) {
             return ex.getMessage();
         }
     }
@@ -98,7 +98,7 @@ public class UserREPL {
         throw new ResponseException(ResponseException.Code.ClientError, "Expected: <yourname>");
     }
 
-    public String observe(String... params) throws ResponseException {
+    public String observe(String... params) throws Exception {
         if (params.length == 1) { //username and password
             int gameNum = 0;
             try {
@@ -120,7 +120,7 @@ public class UserREPL {
         throw new ResponseException(ResponseException.Code.ClientError, "Expected: <gameNumber>");
     }
 
-    public String join(String... params) throws ResponseException {
+    public String join(String... params) throws Exception {
         if (params.length == 2) { //username and password
             int gameNum =0;
 
