@@ -85,8 +85,12 @@ public class GameREPL {
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
 
             return switch (cmd) { //will return whatever comes out of the function that is called
-                case "update" -> update(params);
-                case "quit" -> "quit";
+                case "redraw" -> redrawBoard(params);
+//                case "leave" -> leaveGame(params);
+//                case "move" -> makeMove(params);
+//                case "resign" -> resignGame(params);
+//                case "highlight" -> highlightLegalMoves(params);
+//                case "quit" -> leaveGame(params);
                 default -> help();
             };
         } catch (ResponseException ex) {
@@ -94,13 +98,27 @@ public class GameREPL {
         }
     }
 
-    public String update(String... params) throws ResponseException { //this is here as a placeholder for later
-
-        LogoutRequest request = new LogoutRequest(userAuthToken);
-        serverFacade.logoutUser(request);
-
-        return String.format("%s should never see this I think", userName);
+    public String help() {
+        return """
+                - redraw - redraw/refresh the board
+                - leave - leave the game
+                - move - make a move
+                - resign - raise the white flag honorably and with dignity
+                - highlight - highlight legal moves
+                """;
+        //- refresh (not implemented)
     }
+
+    public String redrawBoard(String... params) throws ResponseException {
+        if (params.length == 0) { //username and password
+            drawBoard();
+        }
+        throw new ResponseException(ResponseException.Code.ClientError, "Expected: nothing");
+    }
+
+
+
+
 
     private void drawBoard() throws ResponseException{
         if (userColor == ChessGame.TeamColor.WHITE) {
@@ -149,13 +167,6 @@ public class GameREPL {
 
         // Column labels
         System.out.println(SET_TEXT_COLOR_BLUE + "    H   G   F  E   D   C  B   A\n" + RESET_TEXT_COLOR);
-    }
-
-    public String help() {
-        return """
-                - quit
-                """;
-        //- refresh (not implemented)
     }
 
     private GameData getGame() throws ResponseException{
