@@ -173,4 +173,30 @@ public class WebSocketService {
             return false;
         }
     }
+
+    public void removePlayer(String authToken, int gameID) throws DataAccessException {
+        String username = getUsername(authToken);
+        GameData oldGameData = getGameData(gameID);
+        ChessGame.TeamColor playerColor = getPlayerColor(username, gameID);
+
+        String whiteUsername;
+        String blackUsername;
+        //determine which color to set to null
+        if (playerColor == ChessGame.TeamColor.WHITE){
+            whiteUsername = null;
+            blackUsername = oldGameData.blackUsername();
+        }
+        else{
+            whiteUsername = oldGameData.whiteUsername();
+            blackUsername = null;
+        }
+
+        gameDAO.updateGameData(gameID, whiteUsername, blackUsername, oldGameData.gameName(), oldGameData.game());
+    }
+
+    public void removeBothPlayers(int gameID) throws DataAccessException {
+
+        GameData oldGameData = getGameData(gameID);
+        gameDAO.updateGameData(gameID, null, null, oldGameData.gameName(), oldGameData.game());
+    }
 }

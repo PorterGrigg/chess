@@ -50,8 +50,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                     MakeMoveCommand moveCommand = new Gson().fromJson(ctx.message(), MakeMoveCommand.class);
                     makeMove(moveCommand.getAuthToken(), moveCommand.getGameID(), moveCommand.getMove(), ctx.session);
                 }
-                //case LEAVE -> leave(command.getAuthToken(), command.getGameID(), ctx.session);
-                //case RESIGN-> resign(command.getAuthToken(), command.getGameID(), ctx.session);
+                case LEAVE -> leave(command.getAuthToken(), command.getGameID(), ctx.session);
+                case RESIGN-> resign(command.getAuthToken(), command.getGameID(), ctx.session);
             }
 
         } catch (IOException ex) {
@@ -106,7 +106,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             if (webSocketService.opponentInCheckmate(authToken, gameID)){
                 var checkmateNotification = getCheckmateNotification(authToken, gameID);
                 connections.broadcastGame(gameID, null, checkmateNotification);
-                endGame(authToken, gameID, move, session);
+                endGame(authToken, gameID);
             }
             //send notification if in check
             else if (webSocketService.opponentInCheck(authToken, gameID)){
@@ -117,7 +117,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             else if (webSocketService.opponentInStalemate(authToken, gameID)){
                 var stalemateNotification = getStalemateNotification(authToken, gameID);
                 connections.broadcastGame(gameID, null, stalemateNotification);
-                endGame(authToken, gameID, move, session);
+                endGame(authToken, gameID);
             }
 
         }catch (InvalidMoveException | DataAccessException | BadRequestException | UnauthorizedUserException exception){
@@ -126,7 +126,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
 
-    private void endGame(String authToken, int gameID, ChessMove move, Session session) throws IOException, DataAccessException {
+    private void endGame(String authToken, int gameID) throws IOException, DataAccessException {
         //send end game message to all players
         GameData gameData =  webSocketService.getGameData(gameID);
         String endMessage = String.format("Well done %s and %s and thanks for playing!", gameData.whiteUsername(), gameData.blackUsername());
@@ -141,6 +141,42 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
         //disconnect all players
         connections.removeAll(gameID);
+        webSocketService.removeBothPlayers(gameID);
+    }
+
+    private void leave(String authToken, int gameID, Session session) throws IOException {
+        try {
+            webSocketService.authorizeUser(authToken);
+
+            var notification = getLeaveNotification(authToken, gameID);
+
+            connections.remove(gameID, session);
+
+            //update gameData if it is a player and not an observer
+            if (webSocketService.usernameIsInGame(webSocketService.getUsername(authToken), gameID)){
+                webSocketService.removePlayer(authToken, gameID);
+            }
+
+            connections.broadcastGame(gameID, null, notification); //send notificaiton that a user has left to all participants
+
+        }catch(UnauthorizedUserException  | DataAccessException | BadRequestException exception){
+            var userErrorMessage = new ErrorMessage(exception.getMessage());
+            connections.broadcastUser(session, userErrorMessage);
+        }
+    }
+
+    private void resign(String authToken, int gameID, Session session) throws IOException {
+        try {
+            webSocketService.authorizeUser(authToken);
+
+            var notification = getResignNotification(authToken, gameID);
+            connections.broadcastGame(gameID, null, notification); //send notificaiton that a user has left to all participants
+            webSocketService.removeBothPlayers(gameID);
+
+        }catch(UnauthorizedUserException  | DataAccessException | BadRequestException exception){
+            var userErrorMessage = new ErrorMessage(exception.getMessage());
+            connections.broadcastUser(session, userErrorMessage);
+        }
     }
 
 
@@ -272,6 +308,39 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         else{
             return "Error: Invalid Color";
         }
+    }
+
+    private NotificationMessage getLeaveNotification(String authToken, int gameID) throws DataAccessException {
+        String username = webSocketService.getUsername(authToken);
+        NotificationMessage notification = null;
+
+        if (webSocketService.usernameIsInGame(username, gameID)){
+            var message = String.format("%s has left the game", username);
+            notification = new NotificationMessage(message); //don't need to specify the type because it is supered
+        }
+        else{
+            var message = String.format("%s has stopped observing the game", username);
+            notification = new NotificationMessage(message);
+        }
+        return notification;
+
+    }
+
+    private NotificationMessage getResignNotification(String authToken, int gameID) throws DataAccessException {
+        String username = webSocketService.getUsername(authToken);
+        NotificationMessage notification = null;
+
+        if (webSocketService.usernameIsInGame(username, gameID)){
+            String playerColor = getPlayerColorString(username, gameID);
+            var message = String.format("%s has resigned the game as %s", username, playerColor);
+            notification = new NotificationMessage(message);
+        }
+        else{
+            throw new BadRequestException("Error: Cannot resign as observer");
+        }
+
+        return notification;
+
     }
 
 }
