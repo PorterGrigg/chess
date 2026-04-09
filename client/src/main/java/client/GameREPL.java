@@ -3,10 +3,14 @@ package client;
 import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPiece;
+import client.websocket.ServerMessageHandler;
+import client.websocket.ServerToClientMessageHandler;
+import client.websocket.WebSocketFacade;
 import model.*;
 import requests.*;
 import results.*;
 import ui.EscapeSequences;
+import websocket.messages.ServerMessage;
 
 import java.util.*;
 
@@ -20,6 +24,7 @@ public class GameREPL {
     private final String userName;
     private final String userAuthToken;
     private final ServerFacade serverFacade;
+    private final WebSocketFacade webSocketFacade;
     private final State state;
     private final ChessGame.TeamColor userColor;
     private final int gameID;
@@ -32,6 +37,7 @@ public class GameREPL {
         state = givenState;
         userColor = givenUserColor;
         gameID = givenGameID;
+        webSocketFacade = new WebSocketFacade(givenServerFacade.getServerUrl(), new ServerToClientMessageHandler());
     }
 
     public void run() {
