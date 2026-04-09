@@ -1,8 +1,6 @@
 package websocket;
 
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.InvalidMoveException;
+import chess.*;
 import com.google.gson.Gson;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
@@ -83,5 +81,96 @@ public class WebSocketService {
 
     public void validateGameID(int gameID) throws DataAccessException {
         getGameData(gameID);
+    }
+
+    public void validateTeamColor(int gameID, String authToken, ChessMove move) throws DataAccessException {
+        GameData gameData = getGameData(gameID);
+        ChessGame game = getGame(gameID);
+        ChessPosition startPos = move.getStartPosition();
+
+        //find user color
+        String username = getUsername(authToken);
+        ChessGame.TeamColor playerColor = getPlayerColor(username, gameID);
+
+        //find piece color
+        ChessPiece piece = game.gameBoard.getPiece(startPos);
+
+        //throw error if don't match
+        if (piece.getTeamColor() != playerColor){
+            throw new BadRequestException("Error: Wrong piece color");
+        }
+
+    }
+
+
+    public ChessGame.TeamColor getPlayerColor(String username, int gameID) throws DataAccessException, BadRequestException {
+        GameData game = getGameData(gameID);
+        String blackUser = game.blackUsername();
+        String whiteUser = game.whiteUsername();
+        if (username.equals(blackUser)){
+            return ChessGame.TeamColor.BLACK;
+        }
+        else if ((username.equals(whiteUser))){
+            return ChessGame.TeamColor.WHITE;
+        }
+        else{
+            throw new BadRequestException("Error: invalid color");
+        }
+    }
+
+    public boolean opponentInCheck(String authToken, int gameID) throws DataAccessException {
+        String username = getUsername(authToken);
+        ChessGame game = getGame(gameID);
+
+        ChessGame.TeamColor playerColor = getPlayerColor(username, gameID);
+
+        if(playerColor == ChessGame.TeamColor.WHITE){
+            return game.isInCheck(ChessGame.TeamColor.BLACK);
+        }
+        else{
+            return game.isInCheck(ChessGame.TeamColor.WHITE);
+        }
+
+
+    }
+
+    public boolean opponentInCheckmate(String authToken, int gameID) throws DataAccessException {
+        String username = getUsername(authToken);
+        ChessGame game = getGame(gameID);
+
+        ChessGame.TeamColor playerColor = getPlayerColor(username, gameID);
+
+        if(playerColor == ChessGame.TeamColor.WHITE){
+            return game.isInCheckmate(ChessGame.TeamColor.BLACK);
+        }
+        else{
+            return game.isInCheckmate(ChessGame.TeamColor.WHITE);
+        }
+    }
+
+    public boolean opponentInStalemate(String authToken, int gameID) throws DataAccessException {
+        String username = getUsername(authToken);
+        ChessGame game = getGame(gameID);
+
+        ChessGame.TeamColor playerColor = getPlayerColor(username, gameID);
+
+        if(playerColor == ChessGame.TeamColor.WHITE){
+            return game.isInStalemate(ChessGame.TeamColor.BLACK);
+        }
+        else{
+            return game.isInStalemate(ChessGame.TeamColor.WHITE);
+        }
+    }
+
+    public boolean usernameIsInGame(String username, int gameID) throws DataAccessException {
+        GameData game = getGameData(gameID);
+        String blackUser = game.blackUsername();
+        String whiteUser = game.whiteUsername();
+        if (username.equals(blackUser) || username.equals(whiteUser)){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 }

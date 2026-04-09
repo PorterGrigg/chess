@@ -2,6 +2,7 @@ package websocket;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPosition;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.AuthDAO;
@@ -66,7 +67,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
             connections.add(gameID, session);
 
-            var userMessage = getUserLoadGameMessage(authToken, gameID);
+            var userMessage = getLoadGameMessage(authToken, gameID);
             connections.broadcastUser(session, userMessage); //send board update to new player
 
             var notification = getConnectNotifiction(authToken, gameID);
@@ -81,67 +82,64 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void makeMove(String authToken, int gameID, ChessMove move, Session session) throws IOException {
         ChessGame game = null;
         try {
+            webSocketService.authorizeUser(authToken);
             game = webSocketService.getGame(gameID);
-        } catch(DataAccessException exception){
-            exception.printStackTrace();
-            var userErrorMessage = new ErrorMessage(exception.getMessage());
-            connections.broadcastUser(session, userErrorMessage); //send error to
-        }
 
-        //update game in database
-        //makeMove method in ChessGame validates its moves
-        try{
+            //update game in database
+            //makeMove method in ChessGame validates its moves
+            webSocketService.validateTeamColor(gameID, authToken, move);
+
             webSocketService.updateGame(gameID, move);
-        }catch (InvalidMoveException exception){
+
+            //send load game message to all clients
+            var loadNotification = getLoadGameMessage(authToken, gameID);
+            connections.broadcastGame(gameID, null, loadNotification); //don't exclude any session
+
+            //send a notification with move made to all other players
+            var moveNotification = getMoveBreakdownNotification(move, authToken, gameID);
+            connections.broadcastGame(gameID, session, moveNotification); //exclude the session that made the move
+
+
+            //send notification if in check
+            if (webSocketService.opponentInCheck(authToken, gameID)){
+                var checkNotification = getCheckNotification(authToken, gameID);
+                connections.broadcastGame(gameID, null, checkNotification);
+            }
+
+            //send notification if in checkmate
+            if (webSocketService.opponentInCheckmate(authToken, gameID)){
+                var checkmateNotification = getCheckmateNotification(authToken, gameID);
+                connections.broadcastGame(gameID, null, checkmateNotification);
+                endGame(authToken, gameID, move, session);
+            }
+
+            //send notification if in stalemate
+            if (webSocketService.opponentInStalemate(authToken, gameID)){
+                var stalemateNotification = getStalemateNotification(authToken, gameID);
+                connections.broadcastGame(gameID, null, stalemateNotification);
+                endGame(authToken, gameID, move, session);
+            }
+
+        }catch (InvalidMoveException | DataAccessException | BadRequestException exception){
             var userErrorMessage = new ErrorMessage(exception.getMessage());
             connections.broadcastUser(session, userErrorMessage);
-        }catch (DataAccessException ex){
-            ex.printStackTrace();
-            var userErrorMessage = new ErrorMessage(ex.getMessage());
-            connections.broadcastUser(session, userErrorMessage); //send error
         }
-
-        //send load game message to all clients
-//        var userMessage = getUserLoadGameMessage(authToken, gameID);
-//        connections.broadcastUser(session, userMessage); //send board update to new player
-//
-//        var notification = getConnectNotifiction(authToken, gameID);
-//        connections.broadcastGame(session, notification); //send notificaiton that a user has entered to all participants
-//
-//
-//
-//
-//
-//        try {
-//
-//
-//            webSocketService.authorizeUser(authToken);
-//            String username = webSocketService.getUsername(authToken);
-//
-//            connections.add(session);
-//
-//            var userMessage = getUserLoadGameMessage(authToken, gameID);
-//            connections.broadcastUser(session, userMessage); //send board update to new player
-//
-//            var notification = getConnectNotifiction(authToken, gameID);
-//            connections.broadcastGame(session, notification); //send notificaiton that a user has entered to all participants
-//
-//        }catch(UnauthorizedUserException exception){
-//            var userErrorMessage = new ErrorMessage("Error: unauthorized user");
-//            connections.broadcastUser(session, userErrorMessage); //send error to user
-//        }catch(DataAccessException exception){
-//            exception.printStackTrace();
-//            var userErrorMessage = new ErrorMessage("Error: could not access data");
-//            connections.broadcastUser(session, userErrorMessage); //send error to
-//        }
     }
+
+
 
     @Override
     public void handleClose(WsCloseContext ctx) {
         System.out.println("Websocket closed");
     }
 
-    private LoadGameMessage getUserLoadGameMessage(String authToken, int gameID) throws BadRequestException, DataAccessException{
+
+
+
+
+
+    //Helper methods
+    private LoadGameMessage getLoadGameMessage(String authToken, int gameID) throws BadRequestException, DataAccessException{
         GameData game = webSocketService.getGameData(gameID);
         return new LoadGameMessage(game);
     }
@@ -150,8 +148,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         String username = webSocketService.getUsername(authToken);
         NotificationMessage notification = null;
 
-        if (usernameIsInGame(username, gameID)){
-            String playerColor = getPlayerColor(username, gameID);
+        if (webSocketService.usernameIsInGame(username, gameID)){
+            String playerColor = getPlayerColorString(username, gameID);
             var message = String.format("%s has joined as %s", username, playerColor);
             notification = new NotificationMessage(message); //don't need to specify the type because it is supered
         }
@@ -163,27 +161,97 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     }
 
-    private boolean usernameIsInGame(String username, int gameID) throws DataAccessException {
-        GameData game = webSocketService.getGameData(gameID);
-        String blackUser = game.blackUsername();
-        String whiteUser = game.whiteUsername();
-        if (username.equals(blackUser) || username.equals(whiteUser)){
-            return true;
+
+    private NotificationMessage getMoveBreakdownNotification(ChessMove move, String authToken, int gameID) throws DataAccessException {
+        String username = webSocketService.getUsername(authToken);
+        NotificationMessage notification;
+
+        String playerColor = getPlayerColorString(username, gameID);
+
+        String startPos = getPositionString(move.getStartPosition());
+        String endPos = getPositionString(move.getEndPosition());
+
+        var message = String.format("%s as %s has moved %s to %s", username, playerColor, startPos, endPos);
+        notification = new NotificationMessage(message);
+
+        return notification;
+    }
+
+    private String getPositionString(ChessPosition pos){
+        String posStr = "";
+
+        //need to translate col to letters
+        int colNum = pos.getColumn();
+        switch(colNum){
+            case 1 -> posStr += "A";
+            case 2 -> posStr += "B";
+            case 3 -> posStr += "C";
+            case 4 -> posStr += "D";
+            case 5 -> posStr += "E";
+            case 6 -> posStr += "F";
+            case 7 -> posStr += "G";
+            case 8 -> posStr += "H";
+        }
+        posStr += String.valueOf(pos.getRow());
+
+        return posStr;
+    }
+
+    private NotificationMessage getCheckNotification(String authToken, int gameID) throws DataAccessException {
+        NotificationMessage notification;
+        String username = webSocketService.getUsername(authToken);
+        String opponentColor = getOpponentColorString(username, gameID);
+
+        var message = String.format("%s in in Check", opponentColor);
+        notification = new NotificationMessage(message);
+
+        return notification;
+    }
+
+    private NotificationMessage getCheckmateNotification(String authToken, int gameID) throws DataAccessException {
+        NotificationMessage notification;
+        String username = webSocketService.getUsername(authToken);
+        String opponentColor = getOpponentColorString(username, gameID);
+
+        var message = String.format("%s in in Checkmate", opponentColor);
+        notification = new NotificationMessage(message);
+
+        return notification;
+    }
+
+    private NotificationMessage getStalemateNotification(String authToken, int gameID) throws DataAccessException {
+        NotificationMessage notification;
+        String username = webSocketService.getUsername(authToken);
+        String opponentColor = getOpponentColorString(username, gameID);
+
+        var message = String.format("%s in in Stalemate", opponentColor);
+        notification = new NotificationMessage(message);
+
+        return notification;
+    }
+
+
+
+    public String getPlayerColorString(String username, int gameID) throws DataAccessException {
+        ChessGame.TeamColor playerColorType = webSocketService.getPlayerColor(username, gameID);
+        if (playerColorType == ChessGame.TeamColor.BLACK){
+            return "Black";
+        }
+        else if (playerColorType == ChessGame.TeamColor.WHITE){
+            return "White";
         }
         else{
-            return false;
+            return "Error: Invalid Color";
         }
     }
 
-    private String getPlayerColor(String username, int gameID) throws DataAccessException {
-        GameData game = webSocketService.getGameData(gameID);
-        String blackUser = game.blackUsername();
-        String whiteUser = game.whiteUsername();
-        if (username.equals(blackUser)){
-            return "Black";
-        }
-        else if ((username.equals(whiteUser))){
+    public String getOpponentColorString(String username, int gameID) throws DataAccessException {
+        ChessGame.TeamColor playerColorType = webSocketService.getPlayerColor(username, gameID);
+        if (playerColorType == ChessGame.TeamColor.BLACK){
             return "White";
+        }
+        else if (playerColorType == ChessGame.TeamColor.WHITE){
+            return "Black";
         }
         else{
             return "Error: Invalid Color";
