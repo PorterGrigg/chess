@@ -91,6 +91,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
             webSocketService.updateGame(gameID, move);
 
+
             //send load game message to all clients
             var loadNotification = getLoadGameMessage(authToken, gameID);
             connections.broadcastGame(gameID, null, loadNotification); //don't exclude any session
