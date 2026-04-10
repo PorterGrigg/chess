@@ -2,6 +2,7 @@ package client.websocket;
 
 import client.GameREPL;
 import client.ResponseException;
+import com.google.gson.Gson;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
@@ -18,11 +19,22 @@ public class ServerToClientMessageHandler implements ServerMessageHandler{
     }
 
     @Override
-    public void notify(ServerMessage serverMessage) {
+    public void notify(String message) {
+        ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
+        //System.out.println("Receiving message from server");
         switch (serverMessage.getServerMessageType()) {
-            case ERROR -> displayError((ErrorMessage) serverMessage);
-            case LOAD_GAME -> displayLoadedGame((LoadGameMessage) serverMessage);
-            case NOTIFICATION -> displayNotification((NotificationMessage) serverMessage);
+            case ERROR ->{
+                ErrorMessage errorMessage= new Gson().fromJson(message, ErrorMessage.class);
+                displayError(errorMessage);
+            }
+            case LOAD_GAME -> {
+                LoadGameMessage loadGameMessage = new Gson().fromJson(message, LoadGameMessage.class);
+                displayLoadedGame(loadGameMessage);
+            }
+            case NOTIFICATION ->  {
+                NotificationMessage notificationMessage= new Gson().fromJson(message, NotificationMessage.class);
+                displayNotification(notificationMessage);
+            }
         }
     }
 
@@ -42,6 +54,7 @@ public class ServerToClientMessageHandler implements ServerMessageHandler{
         // client will pull the gae straight from the database
         try {
             gameREPL.redrawBoard();
+            gameREPL.printPrompt();
         }catch(ResponseException ex){
             System.out.println(RED + ex.getMessage());
             gameREPL.printPrompt();

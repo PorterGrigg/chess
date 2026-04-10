@@ -100,9 +100,9 @@ public class GameREPL {
                 case "refresh" -> redrawBoard(params);
                 case "leave" -> leaveGame(params);
                 case "move" -> makeMove(params);
-//                case "resign" -> resignGame(params);
-//                case "highlight" -> highlightLegalMoves(params);
-//                case "quit" -> leaveGame(params);
+                case "resign" -> resignGame(params);
+                case "highlight" -> highlightLegalMoves(params);
+                case "quit" -> leaveGame(params);
                 default -> help();
             };
         } catch (ResponseException ex) {
@@ -151,10 +151,20 @@ public class GameREPL {
     }
 
     public String makeMove(String... params) throws ResponseException {
+        if (state != State.INGAME){
+            return "Sorry you are not currently in the game";
+        }
         if (params.length == 2) { //start and end
-            //save params
-            ChessPosition startPos = getPosition(params[0]);
-            ChessPosition endPos = getPosition(params[1]);
+            ChessPosition startPos;
+            ChessPosition endPos;
+            try {
+                //save params
+                startPos = getPosition(params[0]);
+                endPos = getPosition(params[1]);
+            }catch(InvalidMoveException ex){
+                throw new ResponseException(ResponseException.Code.ClientError, "Expected: <START POSITION> <END POSITION> <PROMOTION PIECE (If Applicable)>");
+            }
+
 
             //create chess move
             ChessMove newMove = new ChessMove(startPos, endPos, null);
@@ -169,10 +179,18 @@ public class GameREPL {
             return  "Good move!";
         }
         else if (params.length == 3) { //given promotion also
-            //save params
-            ChessPosition startPos = getPosition(params[0]);
-            ChessPosition endPos = getPosition(params[1]);
-            ChessPiece.PieceType promotion = getPromotionPiece(params[2]);
+            ChessPosition startPos;
+            ChessPosition endPos;
+            ChessPiece.PieceType promotion;
+
+            try {
+                //save params
+                startPos = getPosition(params[0]);
+                endPos = getPosition(params[1]);
+                promotion = getPromotionPiece(params[2]);
+            }catch(InvalidMoveException ex){
+                throw new ResponseException(ResponseException.Code.ClientError, "Expected: <START POSITION> <END POSITION> <PROMOTION PIECE (If Applicable)>");
+            }
 
             //create chess move
             ChessMove newMove = new ChessMove(startPos, endPos, promotion);
@@ -190,9 +208,127 @@ public class GameREPL {
         throw new ResponseException(ResponseException.Code.ClientError, "Expected: <START POSITION> <END POSITION> <PROMOTION PIECE (If Applicable)>");
     }
 
+    public String resignGame(String... params) throws ResponseException {
+        if (params.length == 0) {
 
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Are you sure you want to resign? (yes/no)");
+            printPrompt();
+            String input = scanner.nextLine();
+            input.toLowerCase();
+            if (!input.equals("yes")){
+                return "Ok, keep playing your best!";
+            }
 
+            //make resign command
+            UserGameCommand resignCommand = new UserGameCommand(UserGameCommand.CommandType.RESIGN,
+                    userAuthToken, gameID);
 
+            //send through facade
+            webSocketFacade.sendUserCommand(resignCommand);
+
+            //change state machine
+            state = State.LOGGEDIN; //change to state for UserREPL
+
+            //return from the call in the loop
+            return  String.format("You shouldn't see this message from resign game %s!", userName);
+        }
+        throw new ResponseException(ResponseException.Code.ClientError, "Expected: nothing");
+    }
+
+    public String highlightLegalMoves(String... params) throws ResponseException {
+        if (params.length == 1) { //username and password
+
+            //get the start pos
+            ChessPosition startPos;
+            try {
+                startPos = getPosition(params[0]);
+            }catch(InvalidMoveException ex){
+                throw new ResponseException(ResponseException.Code.ClientError, "Expected: <START POSITION> <END POSITION> <PROMOTION PIECE (If Applicable)>");
+            }
+
+            //get valid moves
+            GameData gameData = getGame();
+            ChessGame game = gameData.game();
+            Collection<ChessMove> validMoves = game.validMoves(startPos);
+            List<ChessPosition> validSpaces = getSpaces(validMoves);
+
+            drawHighlightBoard(validSpaces);
+        }
+        else{
+            throw new ResponseException(ResponseException.Code.ClientError, "Expected: <START POSITION>");
+        }
+        return "The legal moves are highlighted!";
+    }
+
+    private List<ChessPosition> getSpaces(Collection<ChessMove> validMoves){
+        List<ChessPosition> spaces = new ArrayList<>();
+        for (ChessMove move: validMoves){
+            spaces.add(move.getEndPosition());
+        }
+        return spaces;
+    }
+
+    private void drawHighlightBoard(List<ChessPosition> validSpaces) throws ResponseException {
+        if (userColor == ChessGame.TeamColor.WHITE) {
+            drawHighlightedWhiteBoard(validSpaces);
+        }
+        else{
+            drawHighlightedBlackBoard(validSpaces);
+        }
+    }
+
+    private void drawHighlightedWhiteBoard(List<ChessPosition> validSpaces) throws ResponseException{
+        GameData game = getGame();
+        var board = game.game().getBoard();
+
+        System.out.println();
+        //rows 8 to 1 (top to bottom)
+        for (int row = 8; row >= 1; row--) {
+            System.out.print(SET_TEXT_COLOR_BLUE + row + "  " + RESET_TEXT_COLOR); //row label
+
+            //columns 1 to 8 (left to right)
+            for (int col = 1; col <= 8; col++) {
+                boolean highlighted = false;
+                for (ChessPosition pos: validSpaces){
+                    if((pos.getColumn() == col) & (pos.getRow() == row)){
+                        highlighted = true;
+                    }
+                }
+                printSquare(board, row, col, highlighted);
+
+            }
+            System.out.println();
+        }
+        // Column labels
+        System.out.println(SET_TEXT_COLOR_BLUE + "    A   B   C  D   E   F  G   H\n" + RESET_TEXT_COLOR);
+    }
+
+    private void drawHighlightedBlackBoard(List<ChessPosition> validSpaces) throws ResponseException{
+        GameData game = getGame();
+        var board = game.game().getBoard();
+
+        System.out.println();
+        //rows 1 to 8 (bottom to top)
+        for (int row = 1; row <= 8; row++) {
+            System.out.print(SET_TEXT_COLOR_BLUE + row + "  " + RESET_TEXT_COLOR); //row label
+
+            //columns 8 to 1 (right to left)
+            for (int col = 8; col >= 1; col--) {
+                boolean highlighted = false;
+                for (ChessPosition pos: validSpaces){
+                    if((pos.getColumn() == col) & (pos.getRow() == row)){
+                        highlighted = true;
+                    }
+                }
+                printSquare(board, row, col, highlighted);
+            }
+            System.out.println();
+        }
+
+        // Column labels
+        System.out.println(SET_TEXT_COLOR_BLUE + "    H   G   F  E   D   C  B   A\n" + RESET_TEXT_COLOR);
+    }
 
     private void drawBoard() throws ResponseException{
         if (userColor == ChessGame.TeamColor.WHITE) {
@@ -214,7 +350,7 @@ public class GameREPL {
 
             //columns 1 to 8 (left to right)
             for (int col = 1; col <= 8; col++) {
-                printSquare(board, row, col);
+                printSquare(board, row, col, false);
 
             }
             System.out.println();
@@ -234,7 +370,7 @@ public class GameREPL {
 
             //columns 8 to 1 (right to left)
             for (int col = 8; col >= 1; col--) {
-                printSquare(board, row, col);
+                printSquare(board, row, col, false);
             }
             System.out.println();
         }
@@ -259,14 +395,17 @@ public class GameREPL {
         throw new ResponseException(ResponseException.Code.ServerError, "Error: could not locate current game");
     }
 
-    private void printSquare(ChessBoard board, int row, int col){
+    private void printSquare(ChessBoard board, int row, int col, boolean highlighted){
         ChessPiece piece = board.getPiece(new chess.ChessPosition(row, col));
 
         String pieceSymbol;
         String squareColor;
         String textColor;
 
-        if ((row+col) %2 ==0 ){
+        if (highlighted){
+            squareColor = SET_BG_COLOR_RED;
+        }
+        else if ((row+col) %2 ==0 ){
             squareColor = SET_BG_COLOR_DARK_BROWN;
         }
         else{
@@ -305,6 +444,8 @@ public class GameREPL {
         //System
     }
 
+
+
     private void connectUser() throws ResponseException {
         //System.out.println("Connecting User");
         UserGameCommand connectCommand = new UserGameCommand(UserGameCommand.CommandType.CONNECT,
@@ -312,15 +453,20 @@ public class GameREPL {
         webSocketFacade.sendUserCommand(connectCommand);
     }
 
-    private ChessPosition getPosition(String strPos){
+    private ChessPosition getPosition(String strPos) throws InvalidMoveException {
 
         //extract row and column
         char colChar = strPos.charAt(0);
         char rowChar = strPos.charAt(1);
 
+
+
         //convert string to ints
         String colStr = String.valueOf(colChar);
         int col = convertCol(colStr);
+        if (col == 0){
+            throw new InvalidMoveException("Wrong parameters");
+        }
         int row = Character.getNumericValue(rowChar);
 
         ChessPosition position = new ChessPosition(row, col);

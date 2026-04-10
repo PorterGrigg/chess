@@ -22,6 +22,7 @@ public class ConnectionManager {
         else{
             Set<Session> sessions = new HashSet<>(); // create a new set
             sessions.add(session);
+            System.out.println("New cennection set made");
             connections.put(gameID, sessions);
         }
     }
@@ -40,15 +41,20 @@ public class ConnectionManager {
     }
 
     public void broadcastGame(int gameID, Session excludeSession, ServerMessage notification) throws IOException {
+        System.out.println("Brodcasting to all players");
         String jsonNotification = new Gson().toJson(notification);
         Set<Session> sessions = connections.get(gameID);
-        for (Session sesh : sessions) {
-            if (sesh.isOpen()) {
-                if (!sesh.equals(excludeSession)) {
-                    sesh.getRemote().sendString(jsonNotification);
+        System.out.println(sessions);
+        if (sessions != null){
+            for (Session sesh : sessions) {
+                if (sesh.isOpen()) {
+                    if (!sesh.equals(excludeSession)) {
+                        sesh.getRemote().sendString(jsonNotification);
+                    }
                 }
             }
         }
+
     }
 
     public void broadcastUser(Session userSession, ServerMessage message) throws IOException {

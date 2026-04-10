@@ -62,14 +62,16 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private void connect(String authToken, int gameID, Session session) throws IOException {
         try {
+            System.out.println("Connecting");
             webSocketService.authorizeUser(authToken);
             String username = webSocketService.getUsername(authToken);
             webSocketService.validateGameID(gameID); //will throw error if ID not found
 
             connections.add(gameID, session);
 
-            var userMessage = getLoadGameMessage(authToken, gameID);
-            connections.broadcastUser(session, userMessage); //send board update to new player
+            //when enter the gameREPL loop it already does this
+//            var userMessage = getLoadGameMessage(authToken, gameID);
+//            connections.broadcastUser(session, userMessage); //send board update to new player
 
             var notification = getConnectNotifiction(authToken, gameID);
             connections.broadcastGame(gameID, session, notification); //send notificaiton that a user has entered to all participants
@@ -90,6 +92,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
             //update game in database
             //makeMove method in ChessGame validates its moves
+
             webSocketService.validateTeamColor(gameID, authToken, move);
 
             webSocketService.updateGame(gameID, move);
@@ -147,6 +150,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void leave(String authToken, int gameID, Session session) throws IOException {
+        System.out.println("Leaving");
         try {
             webSocketService.authorizeUser(authToken);
 
@@ -255,8 +259,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         NotificationMessage notification;
         String username = webSocketService.getUsername(authToken);
         String opponentColor = getOpponentColorString(username, gameID);
+        String opponentUsername = getUsernameFromColor(opponentColor, gameID);
 
-        var message = String.format("%s in in Check", opponentColor);
+        var message = String.format("%s as %s in in Check", opponentUsername, opponentColor);
         notification = new NotificationMessage(message);
 
         return notification;
@@ -266,8 +271,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         NotificationMessage notification;
         String username = webSocketService.getUsername(authToken);
         String opponentColor = getOpponentColorString(username, gameID);
+        String opponentUsername = getUsernameFromColor(opponentColor, gameID);
 
-        var message = String.format("%s in in Checkmate", opponentColor);
+        var message = String.format("%s as %s in in Checkmate", opponentUsername, opponentColor);
         notification = new NotificationMessage(message);
 
         return notification;
@@ -277,8 +283,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         NotificationMessage notification;
         String username = webSocketService.getUsername(authToken);
         String opponentColor = getOpponentColorString(username, gameID);
+        String opponentUsername = getUsernameFromColor(opponentColor, gameID);
 
-        var message = String.format("%s in in Stalemate", opponentColor);
+        var message = String.format("%s as %s in in Stalemate", opponentUsername, opponentColor);
         notification = new NotificationMessage(message);
 
         return notification;
@@ -343,6 +350,17 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
         return notification;
 
+    }
+
+    private String getUsernameFromColor(String color, int gameID) throws DataAccessException {
+        GameData gameData = webSocketService.getGameData(gameID);
+
+        if (color.equals("White")){
+            return gameData.whiteUsername();
+        }
+        else{
+            return gameData.blackUsername();
+        }
     }
 
 }

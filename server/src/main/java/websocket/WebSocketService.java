@@ -83,7 +83,7 @@ public class WebSocketService {
         getGameData(gameID);
     }
 
-    public void validateTeamColor(int gameID, String authToken, ChessMove move) throws DataAccessException {
+    public void validateTeamColor(int gameID, String authToken, ChessMove move) throws DataAccessException, InvalidMoveException {
         GameData gameData = getGameData(gameID);
         ChessGame game = getGame(gameID);
         ChessPosition startPos = move.getStartPosition();
@@ -94,6 +94,11 @@ public class WebSocketService {
 
         //find piece color
         ChessPiece piece = game.gameBoard.getPiece(startPos);
+
+        //check if the position is empty!!
+        if (piece == null){
+            throw new InvalidMoveException("Error: No piece at start position");
+        }
 
         //throw error if don't match
         if (piece.getTeamColor() != playerColor){
